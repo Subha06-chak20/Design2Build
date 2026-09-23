@@ -1,4 +1,4 @@
-from stc_core.assets.cropper import (
+from d2b_core.assets.cropper import (
     BoundingBox,
     ExtractedAsset,
     crop_bounding_box,

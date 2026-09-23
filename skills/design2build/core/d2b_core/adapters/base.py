@@ -47,7 +47,7 @@ class RefinementContext:
 
 
 class HarnessAdapter(ABC):
-    """Abstract interface for driving screenshot-to-code workflows across agents."""
+    """Abstract interface for driving Design2Build workflows across agents."""
 
     @property
     @abstractmethod

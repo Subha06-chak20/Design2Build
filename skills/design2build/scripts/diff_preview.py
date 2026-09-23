@@ -1,7 +1,7 @@
 """
-Antigravity Skill Helper: Diff Preview
-======================================
-Invoked by Antigravity to compute visual difference and generate side-by-side composites.
+Design2Build Helper: Diff Preview
+==================================
+Invoked by AI agents to compute visual difference and generate side-by-side composites.
 """
 
 import argparse
@@ -10,17 +10,17 @@ from pathlib import Path
 
 # Add core package to sys.path if not installed in site-packages
 try:
-    import stc_core
+    import d2b_core
 except ImportError:
     current = Path(__file__).resolve().parent
     while current != current.parent:
-        core_candidate = current / "screenshot-to-code-core"
+        core_candidate = current / "core"
         if core_candidate.exists():
             sys.path.insert(0, str(core_candidate))
             break
         current = current.parent
 
-from stc_core.verification import compute_visual_difference
+from d2b_core.verification import compute_visual_difference
 
 
 def main():

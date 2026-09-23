@@ -1,4 +1,4 @@
-from stc_core.verification.comparator import (
+from d2b_core.verification.comparator import (
     ComparisonResult,
     compute_visual_difference,
     generate_discrepancy_checklist,

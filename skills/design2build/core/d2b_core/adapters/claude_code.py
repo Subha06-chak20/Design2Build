@@ -7,13 +7,13 @@ Future adapter specification for Anthropic Claude Code agent harnesses.
 from pathlib import Path
 from typing import Optional
 
-from stc_core.adapters.base import (
+from d2b_core.adapters.base import (
     GenerationContext,
     HarnessAdapter,
     RefinementContext,
     VisualAnalysis,
 )
-from stc_core.prompts.recipes import (
+from d2b_core.prompts.recipes import (
     get_refinement_instructions,
     get_replication_instructions,
 )

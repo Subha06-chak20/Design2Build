@@ -54,7 +54,7 @@ Recreate this UI as a React + Tailwind component.
 ```
 *The AI agent saves the attached image to `./reference/reference.png` and begins the pipeline.*
 
-### Method C: Command-Line Interface (`d2b` / `stc`)
+### Method C: Command-Line Interface (`d2b` / `design2build`)
 For headless automation or scripting from terminal/PowerShell:
 ```bash
 # Intelligent setup wizard & plan generation

@@ -29,7 +29,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Screenshot-to-Code runtime & artifacts
+# Design2Build runtime & artifacts
+.d2b/
 .stc/
 shot.png
 preview_temp.png

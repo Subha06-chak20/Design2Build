@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 from PIL import Image
 
-from stc_core.config import (
+from d2b_core.config import (
     ProjectConfig,
     ProjectState,
     ProjectType,

@@ -1,7 +1,7 @@
 """
 Asset Extraction and Cropping Engine
 ===================================
-Preserved and adapted from abi/screenshot-to-code's asset extraction architecture.
+Design2Build asset extraction architecture.
 Performs EXIF normalization, normalized bounding box validation, and outward-rounding
 crops to ensure pixel-perfect asset preservation.
 """

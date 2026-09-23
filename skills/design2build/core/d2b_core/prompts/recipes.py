@@ -1,14 +1,14 @@
 """
-Screenshot-to-Code Stack Recipes and Prompt Templates
-=====================================================
-Preserved and adapted from the abi/screenshot-to-code architecture.
+Design2Build Stack Recipes and Prompt Templates
+==============================================
+Design2Build stack and prompt engineering architecture.
 Includes battle-tested CDN configurations, stack boilerplates, and replication rules.
 """
 
 from typing import Dict, Literal, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from stc_core.config import ProjectConfig
+    from d2b_core.config import ProjectConfig
 
 
 StackType = Literal[

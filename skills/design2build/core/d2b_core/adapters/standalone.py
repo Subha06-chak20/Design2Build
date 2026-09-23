@@ -9,13 +9,13 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from stc_core.adapters.base import (
+from d2b_core.adapters.base import (
     GenerationContext,
     HarnessAdapter,
     RefinementContext,
     VisualAnalysis,
 )
-from stc_core.prompts.recipes import (
+from d2b_core.prompts.recipes import (
     STACK_BOILERPLATES,
     SYSTEM_PROMPT,
     get_refinement_instructions,

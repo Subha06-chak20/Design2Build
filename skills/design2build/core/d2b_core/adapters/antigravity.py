@@ -1,7 +1,7 @@
 """
 Antigravity Harness Adapter
 ===========================
-Integrates the screenshot-to-code workflow natively with Google Antigravity.
+Integrates the Design2Build workflow natively with Google Antigravity.
 Allows Antigravity's vision model and agentic tool loop to directly perform
 screenshot inspection, asset extraction, code generation, and iterative refinement.
 """
@@ -9,13 +9,13 @@ screenshot inspection, asset extraction, code generation, and iterative refineme
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from stc_core.adapters.base import (
+from d2b_core.adapters.base import (
     GenerationContext,
     HarnessAdapter,
     RefinementContext,
     VisualAnalysis,
 )
-from stc_core.prompts.recipes import (
+from d2b_core.prompts.recipes import (
     STACK_BOILERPLATES,
     SYSTEM_PROMPT,
     get_refinement_instructions,
@@ -41,7 +41,7 @@ class AntigravityAdapter(HarnessAdapter):
             color_palette=["Primary Brand", "Background Tint", "Text Dark", "Accent/CTA"],
             typography_styles=["Heading Display Font", "Body Sans Font", "Monospace/Badges"],
             suggested_stack="html_tailwind",
-            raw_summary="Antigravity vision analysis guided by screenshot-to-code skill.",
+            raw_summary="Antigravity vision analysis guided by Design2Build skill.",
         )
 
     async def generate_code(self, context: GenerationContext) -> str:

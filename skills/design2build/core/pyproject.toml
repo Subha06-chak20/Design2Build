@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "design2build"
-version = "1.1.0"
+version = "1.2.0"
 description = "Design2Build: Reusable, agent-native visual coding engine and workflow"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -28,11 +28,11 @@ dev = [
 ]
 
 [project.scripts]
-d2b = "stc_core.cli:cli"
-design2build = "stc_core.cli:cli"
-stc = "stc_core.cli:cli"
+d2b = "d2b_core.cli:cli"
+design2build = "d2b_core.cli:cli"
+stc = "d2b_core.cli:cli"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["stc_core*"]
+include = ["d2b_core*", "stc_core*"]
 

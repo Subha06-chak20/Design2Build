@@ -1,7 +1,7 @@
 """
 Project Workspace Scaffolding and Asset Bundler
 ==============================================
-Preserved and adapted from abi/screenshot-to-code's export architecture.
+Design2Build project scaffolding architecture.
 Scaffolds local project directories, localizes extracted assets into ./assets/,
 and generates self-contained, reproducible websites.
 """
@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Dict, Optional, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from stc_core.config import ProjectConfig
+    from d2b_core.config import ProjectConfig
 
 from bs4 import BeautifulSoup
 

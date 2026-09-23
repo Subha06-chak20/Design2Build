@@ -1,10 +1,10 @@
 """
-Screenshot-to-Code (stc) CLI Entrypoint
-======================================
-Trampoline forwarding to stc_core.cli.
+Design2Build (d2b) CLI Entrypoint
+=================================
+Trampoline forwarding to d2b_core.cli.
 """
 
-from stc_core.cli import cli
+from d2b_core.cli import cli
 
 if __name__ == "__main__":
     cli()

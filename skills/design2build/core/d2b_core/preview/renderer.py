@@ -1,7 +1,7 @@
 """
 Headless Browser Screenshot Preview Engine & Responsive Diagnostic Suite
 ========================================================================
-Preserved and adapted from abi/screenshot-to-code's PlaywrightBackend.
+Design2Build Playwright preview rendering backend.
 Renders generated HTML in real headless browser viewports:
 - Mobile: 375x812
 - Tablet: 768x1024

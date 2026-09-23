@@ -1,4 +1,4 @@
-from stc_core.prompts.recipes import (
+from d2b_core.prompts.recipes import (
     SYSTEM_PROMPT,
     STACK_BOILERPLATES,
     StackType,

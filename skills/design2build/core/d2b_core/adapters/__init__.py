@@ -1,13 +1,13 @@
-from stc_core.adapters.base import (
+from d2b_core.adapters.base import (
     GenerationContext,
     HarnessAdapter,
     RefinementContext,
     VisualAnalysis,
 )
-from stc_core.adapters.antigravity import AntigravityAdapter
-from stc_core.adapters.standalone import StandaloneAdapter
-from stc_core.adapters.codex import CodexAdapter
-from stc_core.adapters.claude_code import ClaudeCodeAdapter
+from d2b_core.adapters.antigravity import AntigravityAdapter
+from d2b_core.adapters.standalone import StandaloneAdapter
+from d2b_core.adapters.codex import CodexAdapter
+from d2b_core.adapters.claude_code import ClaudeCodeAdapter
 
 ADAPTER_REGISTRY = {
     "antigravity": AntigravityAdapter,

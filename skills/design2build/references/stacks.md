@@ -1,6 +1,6 @@
 # Stack Boilerplates and CDN References
 
-These configurations are tested and preserved from `abi/screenshot-to-code`.
+These configurations are tested and verified for Design2Build stack generation.
 
 ---
 

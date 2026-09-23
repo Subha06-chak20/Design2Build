@@ -1,4 +1,4 @@
-from stc_core.preview.renderer import (
+from d2b_core.preview.renderer import (
     VIEWPORT_SIZES,
     PreviewRenderer,
     ViewportType,

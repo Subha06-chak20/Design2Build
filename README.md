@@ -88,7 +88,7 @@ Install the core Python package in editable mode:
 pip install -e ./skills/design2build/core
 ```
 
-Verify the installation (commands `d2b`, `design2build`, and `stc` are all available):
+Verify the installation (commands `d2b` and `design2build` are available):
 ```bash
 d2b doctor
 ```
@@ -156,7 +156,7 @@ Please setup and use the Design2Build skill from https://github.com/Subha06-chak
 
 ## 💻 CLI Quick Reference (`d2b`)
 
-The package includes a fast standalone CLI (`d2b`, aliased also as `design2build` and `stc`) to test, preview, audit, and scaffold your code:
+The package includes a fast standalone CLI (`d2b`, aliased also as `design2build`) to test, preview, audit, and scaffold your code:
 
 | Command | Description |
 | :--- | :--- |
@@ -278,9 +278,9 @@ Design2Build/
         │   └── render_preview.py    # Headless browser preview renderer
         └── core/                    # Core Python engine & CLI
             ├── README.md
-            ├── pyproject.toml       # Package configuration (d2b v1.1.0)
+            ├── pyproject.toml       # Package configuration (d2b v1.2.0)
             ├── requirements.txt
-            ├── stc_core/            # Core library modules
+            ├── d2b_core/            # Core library modules
             │   ├── adapters/        # Harness adapters (CLI, Antigravity, Claude Code, etc.)
             │   ├── assets/          # Asset extraction & detection
             │   ├── preview/         # Playwright multi-viewport rendering

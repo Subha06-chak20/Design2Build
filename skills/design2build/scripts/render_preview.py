@@ -1,7 +1,7 @@
 """
-Antigravity Skill Helper: Render Preview
-========================================
-Invoked by Antigravity to render an HTML file in headless browser and capture PNG screenshots.
+Design2Build Helper: Render Preview
+====================================
+Invoked by AI agents to render an HTML file in headless browser and capture PNG screenshots.
 """
 
 import argparse
@@ -11,17 +11,17 @@ from pathlib import Path
 
 # Add core package to sys.path if not installed in site-packages
 try:
-    import stc_core
+    import d2b_core
 except ImportError:
     current = Path(__file__).resolve().parent
     while current != current.parent:
-        core_candidate = current / "screenshot-to-code-core"
+        core_candidate = current / "core"
         if core_candidate.exists():
             sys.path.insert(0, str(core_candidate))
             break
         current = current.parent
 
-from stc_core.preview import PreviewRenderer
+from d2b_core.preview import PreviewRenderer
 
 
 async def main():

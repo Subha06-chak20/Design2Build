@@ -1,7 +1,7 @@
 """
-Screenshot-to-Code Workflow Engine
-==================================
-Orchestrates the 8-stage visual coding pipeline:
+Design2Build Workflow Engine
+============================
+Orchestrates the visual coding pipeline:
 1. Analyze Screenshot
 2. Extract Assets
 3. Scaffold Project
@@ -17,14 +17,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
-from stc_core.adapters import HarnessAdapter, get_adapter
-from stc_core.adapters.base import GenerationContext, RefinementContext
-from stc_core.assets import ExtractedAsset, extract_assets_batch
-from stc_core.config import ProjectConfig, TargetDevice
-from stc_core.preview import PreviewRenderer
-from stc_core.project import scaffold_project
-from stc_core.prompts.recipes import STACK_BOILERPLATES, StackType
-from stc_core.verification import ComparisonResult, compute_visual_difference
+from d2b_core.adapters import HarnessAdapter, get_adapter
+from d2b_core.adapters.base import GenerationContext, RefinementContext
+from d2b_core.assets import ExtractedAsset, extract_assets_batch
+from d2b_core.config import ProjectConfig, TargetDevice
+from d2b_core.preview import PreviewRenderer
+from d2b_core.project import scaffold_project
+from d2b_core.prompts.recipes import STACK_BOILERPLATES, StackType
+from d2b_core.verification import ComparisonResult, compute_visual_difference
 
 
 @dataclass
@@ -50,7 +50,7 @@ class WorkflowResult:
 
 
 class VisualCodingWorkflow:
-    """Executes the full screenshot-to-code pipeline with a given HarnessAdapter."""
+    """Executes the full Design2Build pipeline with a given HarnessAdapter."""
 
     def __init__(
         self,

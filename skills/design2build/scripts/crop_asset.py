@@ -1,7 +1,7 @@
 """
-Antigravity Skill Helper: Crop Asset
-====================================
-Invoked by Antigravity to crop a visual asset from a reference screenshot
+Design2Build Helper: Crop Asset
+================================
+Invoked by AI agents to crop a visual asset from a reference screenshot
 using normalized [ymin, xmin, ymax, xmax] coordinates (0-1000).
 """
 
@@ -11,17 +11,17 @@ from pathlib import Path
 
 # Add core package to sys.path if not installed in site-packages
 try:
-    import stc_core
+    import d2b_core
 except ImportError:
     current = Path(__file__).resolve().parent
     while current != current.parent:
-        core_candidate = current / "screenshot-to-code-core"
+        core_candidate = current / "core"
         if core_candidate.exists():
             sys.path.insert(0, str(core_candidate))
             break
         current = current.parent
 
-from stc_core.assets import extract_and_save_asset
+from d2b_core.assets import extract_and_save_asset
 
 
 def main():

@@ -1,7 +1,7 @@
 """
-Screenshot-to-Code (stc) CLI
-============================
-Unified command-line interface for the Screenshot-to-Code visual coding engine.
+Design2Build (d2b) CLI
+======================
+Unified command-line interface for the Design2Build visual coding engine.
 Supports automated generation, headless browser preview, asset cropping,
 visual diffing, environment diagnostics (doctor), status reporting, project checking, and refinement.
 """
@@ -29,10 +29,10 @@ if sys.platform == "win32":
 
 import click
 
-from stc_core.adapters import get_adapter
-from stc_core.adapters.base import GenerationContext, RefinementContext
-from stc_core.assets import extract_and_save_asset, extract_assets_batch
-from stc_core.config import (
+from d2b_core.adapters import get_adapter
+from d2b_core.adapters.base import GenerationContext, RefinementContext
+from d2b_core.assets import extract_and_save_asset, extract_assets_batch
+from d2b_core.config import (
     ProjectConfig,
     ProjectState,
     ProjectType,
@@ -41,12 +41,12 @@ from stc_core.config import (
     RunMode,
     TargetDevice,
 )
-from stc_core.preview import PreviewRenderer, VIEWPORT_SIZES
-from stc_core.preview.renderer import find_system_edge
-from stc_core.prompts.recipes import StackType
-from stc_core.setup import ImplementationPlanGenerator, ProjectSetupInferrer
-from stc_core.verification import compute_visual_difference
-from stc_core.workflow import VisualCodingWorkflow, WorkflowStepEvent
+from d2b_core.preview import PreviewRenderer, VIEWPORT_SIZES
+from d2b_core.preview.renderer import find_system_edge
+from d2b_core.prompts.recipes import StackType
+from d2b_core.setup import ImplementationPlanGenerator, ProjectSetupInferrer
+from d2b_core.verification import compute_visual_difference
+from d2b_core.workflow import VisualCodingWorkflow, WorkflowStepEvent
 
 
 def progress_printer(event: WorkflowStepEvent):
@@ -162,7 +162,7 @@ def doctor(check_browser: bool):
 
     # 8. Project directory write permissions
     cwd = Path.cwd()
-    test_file = cwd / ".stc_test_write.tmp"
+    test_file = cwd / ".d2b_test_write.tmp"
     try:
         test_file.write_text("ok", encoding="utf-8")
         test_file.unlink()
@@ -189,7 +189,7 @@ def status(project: Path):
     click.echo(click.style("\n=== Design2Build Status ===", fg="cyan", bold=True))
 
     # Version & core
-    click.echo(f"  Version           : 1.1.0 (design2build)")
+    click.echo(f"  Version           : 1.2.0 (design2build)")
     click.echo(f"  Status            : Ready")
     click.echo(f"  Default Harness   : antigravity")
     click.echo(f"  Available Adapters: antigravity, standalone, codex, claude_code")
@@ -222,7 +222,7 @@ def status(project: Path):
         pkg_file = proj_dir / "package.json"
         ref_dir = proj_dir / "reference"
         assets_dir = proj_dir / "assets"
-        stc_dir = proj_dir / ".stc"
+        d2b_dir = proj_dir / ".d2b" if (proj_dir / ".d2b").is_dir() else (proj_dir / ".stc")
 
         d2b_cfg = proj_dir / "d2b.config.json"
         if d2b_cfg.exists():
@@ -237,14 +237,14 @@ def status(project: Path):
         click.echo(f"  - package.json    : {'Found' if pkg_file.exists() else 'Not found'}")
         click.echo(f"  - reference/      : {'Found' if ref_dir.is_dir() else 'Not found'}")
         click.echo(f"  - assets/         : {'Found' if assets_dir.is_dir() else 'Not found'}")
-        click.echo(f"  - .stc/ cache     : {'Found' if stc_dir.is_dir() else 'Not initialized'}")
+        click.echo(f"  - .d2b/ cache     : {'Found' if d2b_dir.is_dir() else 'Not initialized'}")
     else:
         click.echo(f"  - Directory does not exist yet (will be created on generate).")
     click.echo("")
 
 
 # ----------------------------------------------------------------------
-# stc check: Visual parity check between project and reference
+# d2b check: Visual parity check between project and reference
 # ----------------------------------------------------------------------
 @cli.command()
 @click.argument("reference", type=click.Path(exists=True, dir_okay=False, path_type=Path))
@@ -265,8 +265,8 @@ def check(
 ):
     """Render the current project and visually compare it against a reference screenshot with responsive checks."""
     proj_dir = Path(project).resolve()
-    stc_cache = proj_dir / ".stc"
-    stc_cache.mkdir(parents=True, exist_ok=True)
+    d2b_cache = proj_dir / ".d2b"
+    d2b_cache.mkdir(parents=True, exist_ok=True)
 
     # Locate entry file
     if entry:
@@ -296,13 +296,13 @@ def check(
     else:
         target_viewport = viewport
 
-    click.echo(click.style("\n=== Screenshot-to-Code Visual Verification ===", fg="cyan", bold=True))
+    click.echo(click.style("\n=== Design2Build Visual Verification ===", fg="cyan", bold=True))
     click.echo(f"Reference Screenshot : {reference.resolve()} ({ref_w}x{ref_h}px)")
     click.echo(f"Project Entry File   : {entry_file}")
     click.echo(f"Target Viewport      : {target_viewport} ({VIEWPORT_SIZES[target_viewport][0]}x{VIEWPORT_SIZES[target_viewport][1]}px)\n")
 
     # Render current preview
-    rendered_png = stc_cache / f"check_preview_{target_viewport}.png"
+    rendered_png = d2b_cache / f"check_preview_{target_viewport}.png"
     renderer = PreviewRenderer()
 
     async def _render_and_diff():
@@ -318,8 +318,8 @@ def check(
         sys.exit(1)
 
     # Compute visual diff
-    actual_diff_out = diff_out or (stc_cache / f"diff_{target_viewport}.png")
-    actual_comp_out = composite_out or (stc_cache / f"composite_{target_viewport}.png")
+    actual_diff_out = diff_out or (d2b_cache / f"diff_{target_viewport}.png")
+    actual_comp_out = composite_out or (d2b_cache / f"composite_{target_viewport}.png")
 
     result = compute_visual_difference(
         reference_path=reference,
@@ -352,7 +352,7 @@ def check(
             try:
                 return await r.capture_responsive_suite(
                     html_or_file=entry_file,
-                    output_dir=stc_cache,
+                    output_dir=d2b_cache,
                     viewports=("mobile", "tablet", "desktop", "large_desktop"),
                 )
             finally:
@@ -381,7 +381,7 @@ def check(
         if all_responsive_ok:
             click.echo(click.style("\n[✓] All responsive viewports verified: Fluid, no horizontal overflow, zero runtime errors.", fg="green", bold=True))
         else:
-            click.echo(click.style("\n[!] Responsive issues found. Inspect generated previews in .stc/.", fg="yellow", bold=True))
+            click.echo(click.style("\n[!] Responsive issues found. Inspect generated previews in .d2b/.", fg="yellow", bold=True))
 
     click.echo(click.style("\n--- Visual Discrepancy Checklist ---", bold=True))
     click.echo(f" [{'✓' if result.similarity_score > 0.85 else ' '}] Overall Layout Hierarchy & Alignment")
@@ -391,11 +391,11 @@ def check(
     click.echo(f" [{'✓' if result.is_acceptable else ' '}] Spacing, Gaps, and Padding Precision\n")
 
     if not result.is_acceptable:
-        click.echo(click.style("Run 'stc refine <reference>' or ask Antigravity to adjust the layout.", fg="yellow"))
+        click.echo(click.style("Run 'd2b refine <reference>' or ask your AI coding assistant to adjust the layout.", fg="yellow"))
 
 
 # ----------------------------------------------------------------------
-# stc refine: Iterative refinement of existing project
+# d2b refine: Iterative refinement of existing project
 # ----------------------------------------------------------------------
 @cli.command()
 @click.argument("reference", type=click.Path(exists=True, dir_okay=False, path_type=Path))
@@ -420,15 +420,15 @@ def refine(
         click.echo(click.style(f"Error: Entry file not found at {target_file}", fg="red"), err=True)
         sys.exit(1)
 
-    click.echo(click.style("\n=== Screenshot-to-Code Refinement Loop ===", fg="cyan", bold=True))
+    click.echo(click.style("\n=== Design2Build Refinement Loop ===", fg="cyan", bold=True))
     click.echo(f"Reference : {reference.resolve()}")
     click.echo(f"Project   : {proj_dir}")
     click.echo(f"Entry     : {entry}")
     click.echo(f"Harness   : {agent} | Max Passes: {max_passes}\n")
 
-    stc_cache = proj_dir / ".stc"
-    stc_cache.mkdir(parents=True, exist_ok=True)
-    backup_dir = stc_cache / "backups"
+    d2b_cache = proj_dir / ".d2b"
+    d2b_cache.mkdir(parents=True, exist_ok=True)
+    backup_dir = d2b_cache / "backups"
     backup_dir.mkdir(parents=True, exist_ok=True)
 
     # Save backup of existing file
@@ -442,9 +442,9 @@ def refine(
 
     async def _execute_refinement():
         current_code = target_file.read_text(encoding="utf-8")
-        desktop_preview = stc_cache / "refine_preview.png"
-        diff_path = stc_cache / "refine_diff.png"
-        comp_path = stc_cache / "refine_composite.png"
+        desktop_preview = d2b_cache / "refine_preview.png"
+        diff_path = d2b_cache / "refine_diff.png"
+        comp_path = d2b_cache / "refine_composite.png"
 
         try:
             # Initial baseline render
@@ -759,7 +759,7 @@ def generate(
 
 
 # ----------------------------------------------------------------------
-# stc preview: Headless browser rendering
+# d2b preview: Headless browser rendering
 # ----------------------------------------------------------------------
 @cli.command()
 @click.argument("html_source", type=click.Path(exists=True, path_type=Path))
@@ -796,7 +796,7 @@ def preview(html_source: Path, out: Path, viewport: str):
 
 
 # ----------------------------------------------------------------------
-# stc extract-assets: Bounding box image extraction
+# d2b extract-assets: Bounding box image extraction
 # ----------------------------------------------------------------------
 @cli.command("extract-assets")
 @click.argument("screenshot", type=click.Path(exists=True, dir_okay=False, path_type=Path))
@@ -836,7 +836,7 @@ def extract_assets(
 
 
 # ----------------------------------------------------------------------
-# stc diff: Visual comparison and metrics
+# d2b diff: Visual comparison and metrics
 # ----------------------------------------------------------------------
 @cli.command()
 @click.argument("reference", type=click.Path(exists=True, dir_okay=False, path_type=Path))

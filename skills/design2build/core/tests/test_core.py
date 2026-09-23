@@ -1,6 +1,6 @@
 """
-Unit and Integration Tests for Screenshot-to-Code Core
-======================================================
+Unit and Integration Tests for Design2Build Core
+================================================
 Tests asset cropping, preview rendering, visual comparison, scaffolding, and adapters.
 """
 
@@ -11,12 +11,12 @@ from pathlib import Path
 import pytest
 from PIL import Image, ImageDraw
 
-from stc_core.adapters import get_adapter
-from stc_core.assets import BoundingBox, crop_bounding_box, extract_and_save_asset
-from stc_core.preview import PreviewRenderer, VIEWPORT_SIZES
-from stc_core.project import scaffold_project
-from stc_core.prompts.recipes import STACK_BOILERPLATES, get_replication_instructions
-from stc_core.verification import compute_visual_difference
+from d2b_core.adapters import get_adapter
+from d2b_core.assets import BoundingBox, crop_bounding_box, extract_and_save_asset
+from d2b_core.preview import PreviewRenderer, VIEWPORT_SIZES
+from d2b_core.project import scaffold_project
+from d2b_core.prompts.recipes import STACK_BOILERPLATES, get_replication_instructions
+from d2b_core.verification import compute_visual_difference
 
 
 def create_test_image(width=1000, height=600) -> Image.Image:
@@ -115,7 +115,7 @@ async def test_headless_browser_rendering():
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-blue-600 text-white p-12">
-  <h1 class="text-3xl font-bold">Screenshot-to-Code Render Test</h1>
+  <h1 class="text-3xl font-bold">Design2Build Render Test</h1>
   <p class="mt-4">Testing headless Chromium visual capture.</p>
 </body>
 </html>"""
@@ -160,7 +160,7 @@ def test_visual_comparator():
 @pytest.mark.asyncio
 async def test_detect_assets_validation():
     """Test validation and error handling for automated asset detection."""
-    from stc_core.assets import detect_assets_with_gemini
+    from d2b_core.assets import detect_assets_with_gemini
     img = create_test_image(400, 300)
     with pytest.raises(ValueError, match="GEMINI_API_KEY"):
         await detect_assets_with_gemini(img, ["logo"], api_key="")
@@ -169,8 +169,8 @@ async def test_detect_assets_validation():
 @pytest.mark.asyncio
 async def test_standalone_adapter_behavior():
     """Test StandaloneAdapter boilerplate fallback when no API key is set."""
-    from stc_core.adapters import StandaloneAdapter
-    from stc_core.adapters.base import GenerationContext
+    from d2b_core.adapters import StandaloneAdapter
+    from d2b_core.adapters.base import GenerationContext
     adapter = StandaloneAdapter(gemini_api_key="", openai_api_key="")
     ctx = GenerationContext(
         screenshot_path=Path("dummy.png"),
@@ -182,9 +182,9 @@ async def test_standalone_adapter_behavior():
 
 
 def test_cli_doctor_and_status():
-    """Test stc doctor and stc status via Click CliRunner."""
+    """Test d2b doctor and d2b status via Click CliRunner."""
     from click.testing import CliRunner
-    from stc_core.cli import cli
+    from d2b_core.cli import cli
 
     runner = CliRunner()
     res_doc = runner.invoke(cli, ["doctor", "--no-check-browser"])
@@ -195,7 +195,7 @@ def test_cli_doctor_and_status():
     res_stat = runner.invoke(cli, ["status"])
     assert res_stat.exit_code == 0
     assert "Design2Build Status" in res_stat.output
-    assert "1.1.0" in res_stat.output
+    assert "1.2.0" in res_stat.output
 
 
 
@@ -206,7 +206,7 @@ def test_responsive_prompt_directives():
     assert "DO NOT HARDCODE SCREENSHOT DIMENSIONS" in instructions
     assert "ZERO HORIZONTAL OVERFLOW" in instructions
 
-    from stc_core.prompts.recipes import SYSTEM_PROMPT, get_refinement_instructions
+    from d2b_core.prompts.recipes import SYSTEM_PROMPT, get_refinement_instructions
     assert "Responsive Container Hierarchy" in SYSTEM_PROMPT
     assert "Visual Specification vs. Responsive Reality" in SYSTEM_PROMPT
 
@@ -263,7 +263,7 @@ async def test_responsive_diagnostics_and_overflow_detection():
 
 def test_project_config_serialization():
     """Test ProjectConfig dataclass, viewports resolution, and JSON persistence."""
-    from stc_core.config import (
+    from d2b_core.config import (
         ProjectConfig,
         ProjectType,
         TargetDevice,
@@ -306,8 +306,8 @@ def test_project_config_serialization():
 
 def test_project_setup_inferrer_from_prompt():
     """Verify inference engine deduces stack, type, and devices from prompt keywords."""
-    from stc_core.setup import ProjectSetupInferrer
-    from stc_core.config import ProjectType, TargetDevice, RunMode, ReferenceIntent
+    from d2b_core.setup import ProjectSetupInferrer
+    from d2b_core.config import ProjectType, TargetDevice, RunMode, ReferenceIntent
 
     with tempfile.TemporaryDirectory() as tmpdir:
         inferrer = ProjectSetupInferrer(workspace_dir=Path(tmpdir))
@@ -331,8 +331,8 @@ def test_project_setup_inferrer_from_prompt():
 def test_project_setup_inferrer_from_workspace():
     """Verify inference engine detects framework and dependencies from package.json."""
     import json
-    from stc_core.setup import ProjectSetupInferrer
-    from stc_core.config import ProjectState, RunMode
+    from d2b_core.setup import ProjectSetupInferrer
+    from d2b_core.config import ProjectState, RunMode
 
     with tempfile.TemporaryDirectory() as tmpdir:
         workspace = Path(tmpdir)
@@ -359,8 +359,8 @@ def test_project_setup_inferrer_from_workspace():
 
 def test_implementation_plan_generator():
     """Verify structured plan generation customized to ProjectConfig."""
-    from stc_core.config import ProjectConfig, ProjectType, TargetDevice, RunMode
-    from stc_core.setup import ImplementationPlanGenerator
+    from d2b_core.config import ProjectConfig, ProjectType, TargetDevice, RunMode
+    from d2b_core.setup import ImplementationPlanGenerator
 
     cfg = ProjectConfig(
         project_type=ProjectType.COMPONENT,
@@ -380,7 +380,7 @@ def test_implementation_plan_generator():
 def test_cli_setup_non_interactive():
     """Test d2b setup command in non-interactive mode via Click CliRunner."""
     from click.testing import CliRunner
-    from stc_core.cli import cli
+    from d2b_core.cli import cli
 
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -406,8 +406,8 @@ def test_cli_setup_non_interactive():
 
 def test_replication_instructions_with_config():
     """Verify get_replication_instructions tailors output when ProjectConfig is provided."""
-    from stc_core.config import ProjectConfig, ProjectType, TargetDevice, ReferenceIntent
-    from stc_core.prompts.recipes import get_replication_instructions
+    from d2b_core.config import ProjectConfig, ProjectType, TargetDevice, ReferenceIntent
+    from d2b_core.prompts.recipes import get_replication_instructions
 
     cfg = ProjectConfig(
         project_type=ProjectType.COMPONENT,
@@ -421,5 +421,6 @@ def test_replication_instructions_with_config():
     assert "Target: ISOLATED COMPONENT" in prompt or "Isolated Component" in prompt
     assert "Mobile-First / Mobile-Only" in prompt
     assert "max-w-7xl" in prompt
+
 
 
