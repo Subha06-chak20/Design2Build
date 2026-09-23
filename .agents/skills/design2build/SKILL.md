@@ -9,9 +9,9 @@ description: >-
   "convert screenshot to code", "recreate this UI", or gives an image to implement.
 ---
 
-# Design2Build: Antigravity Visual Coding Workflow
+# Design2Build: Visual Coding Workflow
 
-This skill guides Antigravity through the complete 10-stage Design2Build visual reconstruction pipeline.
+This skill guides vision-enabled AI coding agents (such as Antigravity, Claude Code, Cursor, Codex, or Windsurf) through the complete 10-stage Design2Build visual reconstruction pipeline.
 Rather than generating rough one-shot approximations, this workflow:
 0. **Intelligent Project Setup**: Automatically infers project type, stack, target devices, responsive mode, and run mode from the prompt, workspace, and reference images—asking only when ambiguity remains.
 1. **Implementation Plan Confirmation**: Generates a structured milestone plan customized to the project and confirms alignment before generating code.
@@ -52,7 +52,7 @@ The user attaches or drags an image into chat:
 Use Design2Build.
 Recreate this UI as a React + Tailwind component.
 ```
-*Antigravity saves the attached image to `./reference/reference.png` and begins the pipeline.*
+*The AI agent saves the attached image to `./reference/reference.png` and begins the pipeline.*
 
 ### Method C: Command-Line Interface (`d2b` / `stc`)
 For headless automation or scripting from terminal/PowerShell:

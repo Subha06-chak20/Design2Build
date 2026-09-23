@@ -1,6 +1,6 @@
 # Design2Build
 
-> **Agent-Native Visual Engineering Skills & Workflows for Antigravity, LLM Coding Agents, and Developers.**
+> **Agent-Native Visual Engineering Skills & Workflows for Antigravity, Claude Code, and AI Coding Agents.**
 
 **Design2Build** is an open-source collection of reusable AI agent skills, core engines, and CLI workflows that turn visual specifications—screenshots, UI mockups, and web designs—into production-grade, pixel-accurate, and truly responsive frontend code.
 
@@ -16,10 +16,10 @@
   - [1. Clone the Repository](#1-clone-the-repository)
   - [2. Install the Core Engine & CLI](#2-install-the-core-engine--cli)
   - [3. Install Browser Engine (Playwright)](#3-install-browser-engine-playwright)
-- [How to Use as an Antigravity Skill](#how-to-use-as-an-antigravity-skill)
+- [How to Use as an AI Coding Skill](#how-to-use-as-an-ai-coding-skill)
   - [Workspace Installation](#workspace-installation)
   - [Global Installation](#global-installation)
-  - [Copy-Paste Prompt for Antigravity](#copy-paste-prompt-for-antigravity)
+  - [Copy-Paste Prompt for AI Agents](#copy-paste-prompt-for-ai-agents)
 - [CLI Quick Reference (`d2b`)](#cli-quick-reference-d2b)
 - [Supported Frontend Stacks](#supported-frontend-stacks)
 - [Responsive Layout Architecture](#responsive-layout-architecture)
@@ -40,7 +40,7 @@ When modern AI agents generate frontends from screenshot images, they frequently
 - **Headless Browser Verification**: Automatically renders generated pages in headless Chromium / Edge across 4 standardized viewports (Mobile 375px, Tablet 768px, Desktop 1024px, Large Desktop 1440px).
 - **Responsive Health Audits**: Automatically detects horizontal overflow, identifies offending DOM elements, and warns against artificially narrow desktop containers.
 - **Outward-Rounding Asset Cropper**: Crops logos, badges, and icons from the reference image without boundary pixel clipping.
-- **Harness Independence**: Designed natively for Google Antigravity, but easily pluggable into standalone CLI scripts, Claude Code, or Codex.
+- **Agent Independence**: Works natively with any vision-capable AI coding assistant (such as Antigravity, Claude Code by Anthropic, Cursor, Codex, or Windsurf) or via standalone CLI scripts.
 
 ---
 
@@ -49,7 +49,7 @@ When modern AI agents generate frontends from screenshot images, they frequently
 ### 1. `design2build`
 - **Location**: [`skills/design2build/`](skills/design2build/)
 - **Skill Name**: `design2build`
-- **Trigger Phrasing**: *"use Design2Build"*, *"convert this screenshot to code"*, *"build this website from reference"*, *"recreate this UI"*, or uploading a UI mockup to Antigravity.
+- **Trigger Phrasing**: *"use Design2Build"*, *"convert this screenshot to code"*, *"build this website from reference"*, *"recreate this UI"*, or uploading a UI mockup to your AI coding assistant.
 - **Capabilities**:
   - **Stage 0 — Intelligent Project Setup**: Context-aware inference from user prompts, workspace files (`package.json`), and reference aspect ratios to determine stack, devices, and run mode without redundant questions.
   - **Stage 1 — Implementation Plan Confirmation**: Generates a structured milestone plan customized to the project and confirms alignment before generating code.
@@ -102,12 +102,12 @@ playwright install chromium
 
 ---
 
-## 🤖 How to Use as an Antigravity Skill
+## 🤖 How to Use as an AI Coding Skill
 
-Antigravity automatically discovers skills defined with a `SKILL.md` file.
+Design2Build is compatible with any AI coding agent equipped with vision capabilities (such as Antigravity, Claude Code by Anthropic, Cursor, Codex, or Windsurf). AI coding assistants automatically discover skills defined with a `SKILL.md` file.
 
 ### Workspace Installation
-To use Design2Build inside your current project workspace, copy the skill folder into `.agents/skills/`:
+To use Design2Build inside your project workspace, copy the skill folder into `.agents/skills/`:
 
 ```bash
 mkdir -p .agents/skills
@@ -115,7 +115,7 @@ cp -r /path/to/Design2Build/skills/design2build .agents/skills/
 ```
 
 ### Global Installation
-To make the skill accessible across all your Antigravity sessions on your machine:
+To make the skill accessible across all projects on your machine:
 
 **Windows**:
 ```powershell
@@ -129,9 +129,9 @@ cp -r skills/design2build ~/.gemini/config/skills/
 
 ---
 
-### Copy-Paste Prompt for Antigravity
+### Copy-Paste Prompt for AI Agents
 
-When you move to another computer or new workspace, you can copy and paste this prompt directly into Antigravity to clone, install, and start using the skill immediately:
+When moving to another computer, new device, or workspace, paste this prompt directly into your AI coding assistant (Antigravity, Claude Code, Cursor, etc.):
 
 ```text
 Please setup and use the Design2Build skill from https://github.com/Subha06-chak20/Design2Build.git:
@@ -263,12 +263,15 @@ RESPONSIVE REFLOW GRIDS (grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-
 
 ```
 Design2Build/
+├── .agents/
+│   └── skills/
+│       └── design2build/            # Pre-configured skill directory for agents
 ├── .gitignore
 ├── LICENSE                          # MIT License
 ├── README.md                        # Documentation
 └── skills/
     └── design2build/                # Primary Visual Coding Skill
-        ├── SKILL.md                 # Antigravity skill specification & 10-stage runbook
+        ├── SKILL.md                 # Visual coding skill specification & 10-stage runbook
         ├── references/
         │   ├── stacks.md            # CDN boilerplates & stack definitions
         │   └── verification_checklist.md
@@ -281,7 +284,7 @@ Design2Build/
             ├── pyproject.toml       # Package configuration (d2b v1.1.0)
             ├── requirements.txt
             ├── stc_core/            # Core library modules
-            │   ├── adapters/        # Harness adapters (Antigravity, Standalone, etc.)
+            │   ├── adapters/        # Harness adapters (CLI, Antigravity, Claude Code, etc.)
             │   ├── assets/          # Asset extraction & detection
             │   ├── preview/         # Playwright multi-viewport rendering
             │   ├── prompts/         # Responsive recipes & prompt engineering
