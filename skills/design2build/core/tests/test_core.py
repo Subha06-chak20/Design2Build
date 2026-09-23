@@ -189,13 +189,14 @@ def test_cli_doctor_and_status():
     runner = CliRunner()
     res_doc = runner.invoke(cli, ["doctor", "--no-check-browser"])
     assert res_doc.exit_code == 0
-    assert "Screenshot-to-Code Doctor" in res_doc.output
+    assert "Design2Build Doctor" in res_doc.output
     assert "System ready" in res_doc.output
 
     res_stat = runner.invoke(cli, ["status"])
     assert res_stat.exit_code == 0
-    assert "Screenshot-to-Code Status" in res_stat.output
-    assert "0.1.0" in res_stat.output
+    assert "Design2Build Status" in res_stat.output
+    assert "1.0.1" in res_stat.output
+
 
 
 def test_responsive_prompt_directives():

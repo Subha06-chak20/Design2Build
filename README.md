@@ -10,7 +10,7 @@
 
 - [Overview](#overview)
 - [Skills Catalog](#skills-catalog)
-  - [1. screenshot-to-code](#1-screenshot-to-code)
+  - [1. design2build](#1-design2build)
 - [Prerequisites](#prerequisites)
 - [Installation & Setup](#installation--setup)
   - [1. Clone the Repository](#1-clone-the-repository)
@@ -19,7 +19,7 @@
 - [How to Use as an Antigravity Skill](#how-to-use-as-an-antigravity-skill)
   - [Option A: Workspace-Local Installation](#option-a-workspace-local-installation)
   - [Option B: Global User Installation](#option-b-global-user-installation)
-- [CLI Quick Reference (`stc`)](#cli-quick-reference-stc)
+- [CLI Quick Reference (`d2b`)](#cli-quick-reference-d2b)
 - [Supported Frontend Stacks](#supported-frontend-stacks)
 - [Responsive Layout Architecture](#responsive-layout-architecture)
 - [Repository Structure](#repository-structure)
@@ -45,9 +45,10 @@ When modern AI agents generate frontends from screenshot images, they frequently
 
 ## 🧰 Skills Catalog
 
-### 1. `screenshot-to-code`
-- **Location**: [`skills/screenshot-to-code/`](skills/screenshot-to-code/)
-- **Trigger Phrasing**: *"convert this screenshot to code"*, *"build this website from reference"*, *"recreate this UI"*, or uploading a UI image to Antigravity.
+### 1. `design2build`
+- **Location**: [`skills/design2build/`](skills/design2build/)
+- **Skill Name**: `design2build`
+- **Trigger Phrasing**: *"use Design2Build"*, *"convert this screenshot to code"*, *"build this website from reference"*, *"recreate this UI"*, or uploading a UI mockup to Antigravity.
 - **Capabilities**:
   - **Stage 1 — Ingestion & Viewport Detection**: Analyzes layout hierarchy, color palette, fonts, and aspect ratio.
   - **Stage 2 — Asset Extraction**: Normalizes bounding boxes and crops assets using generous pixel geometry.
@@ -80,12 +81,12 @@ cd Design2Build
 ### 2. Install the Core Engine & CLI
 Install the core Python package in editable mode:
 ```bash
-pip install -e ./skills/screenshot-to-code/core
+pip install -e ./skills/design2build/core
 ```
 
-Verify the installation:
+Verify the installation (commands `d2b`, `design2build`, and `stc` are all available):
 ```bash
-stc doctor
+d2b doctor
 ```
 
 ### 3. Install Browser Engine (Playwright)
@@ -93,7 +94,7 @@ To enable headless browser rendering and responsive visual audits:
 ```bash
 playwright install chromium
 ```
-*(On Windows systems, `stc` will also automatically detect and use system Microsoft Edge if Chromium is not yet installed).*
+*(On Windows systems, `d2b` will also automatically detect and use system Microsoft Edge if Chromium is not yet installed).*
 
 ---
 
@@ -107,7 +108,7 @@ To use the skill inside your current project workspace, copy or symlink the skil
 ```bash
 # Inside your project repository:
 mkdir -p .agents/skills
-cp -r /path/to/Design2Build/skills/screenshot-to-code .agents/skills/
+cp -r /path/to/Design2Build/skills/design2build .agents/skills/
 ```
 
 ### Option B: Global User Installation
@@ -115,35 +116,35 @@ To make the skill accessible across all your Antigravity sessions on your machin
 
 **Windows**:
 ```powershell
-Copy-Item -Recurse "skills/screenshot-to-code" "$env:USERPROFILE\.gemini\antigravity\skills\"
+Copy-Item -Recurse "skills/design2build" "$env:USERPROFILE\.gemini\antigravity\skills\"
 ```
 
 **macOS / Linux**:
 ```bash
-cp -r skills/screenshot-to-code ~/.gemini/antigravity/skills/
+cp -r skills/design2build ~/.gemini/antigravity/skills/
 ```
 
-Once installed, simply send your screenshot to Antigravity and prompt:
-> *"Recreate this UI in HTML and Tailwind CSS. Ensure it is fully responsive and verified across viewports."*
+Once installed, simply send your screenshot or design to Antigravity and prompt:
+> *"Use Design2Build to recreate this UI in HTML and Tailwind CSS. Ensure it is fully responsive and verified across viewports."*
 
 ---
 
-## 💻 CLI Quick Reference (`stc`)
+## 💻 CLI Quick Reference (`d2b`)
 
-The package includes a fast standalone CLI (`stc`) to test, preview, and audit your code:
+The package includes a fast standalone CLI (`d2b`, aliased also as `design2build` and `stc`) to test, preview, and audit your code:
 
 | Command | Description |
 | :--- | :--- |
-| `stc doctor` | Check environment, dependencies, and headless browser status |
-| `stc status` | Display package version, viewports, and supported stacks |
-| `stc preview index.html --viewport all` | Render and capture screenshots across all 4 responsive viewports |
-| `stc preview index.html --viewport mobile` | Render mobile viewport (375x812px) |
-| `stc check reference.png --responsive` | Run visual diff comparison and multi-viewport responsive health audit |
-| `stc crop reference.png --coords [ymin,xmin,ymax,xmax] --out ./assets/logo.png` | Crop asset with outward-rounding geometry |
+| `d2b doctor` | Check environment, dependencies, and headless browser status |
+| `d2b status` | Display package version, viewports, and supported stacks |
+| `d2b preview index.html --viewport all` | Render and capture screenshots across all 4 responsive viewports |
+| `d2b preview index.html --viewport mobile` | Render mobile viewport (375x812px) |
+| `d2b check reference.png --responsive` | Run visual diff comparison and multi-viewport responsive health audit |
+| `d2b crop reference.png --coords [ymin,xmin,ymax,xmax] --out ./assets/logo.png` | Crop asset with outward-rounding geometry |
 
 ### Example Responsive Health Audit Output
 ```text
-=== Screenshot-to-Code Visual Verification ===
+=== Design2Build Visual Verification ===
 Target Viewport      : desktop_wide (1280x832px)
 
 --- Responsive Layout Health Audit ---
@@ -198,7 +199,7 @@ Design2Build/
 ├── LICENSE                          # MIT License
 ├── README.md                        # Documentation
 └── skills/
-    └── screenshot-to-code/          # Primary Visual Coding Skill
+    └── design2build/                # Primary Visual Coding Skill
         ├── SKILL.md                 # Antigravity skill specification & runbook
         ├── references/
         │   ├── stacks.md            # CDN boilerplates & stack definitions
@@ -209,7 +210,7 @@ Design2Build/
         │   └── render_preview.py    # Headless browser preview renderer
         └── core/                    # Core Python engine & CLI
             ├── README.md
-            ├── pyproject.toml       # Package configuration
+            ├── pyproject.toml       # Package configuration (d2b / design2build / stc)
             ├── requirements.txt
             ├── stc_core/            # Core library modules
             │   ├── adapters/        # Harness adapters (Antigravity, Standalone, etc.)
@@ -230,7 +231,7 @@ Design2Build/
 Run the full pytest suite to verify all core components, asset extractors, prompt directives, and responsive diagnostics:
 
 ```bash
-pytest skills/screenshot-to-code/core/tests/test_core.py -v
+pytest skills/design2build/core/tests/test_core.py -v
 ```
 
 ---

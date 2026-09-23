@@ -1,25 +1,26 @@
 ---
-name: screenshot-to-code
+name: design2build
 description: >-
   Converts screenshots, UI mockups, or web designs into working, pixel-accurate,
-  visually-verified code projects. Uses headless browser rendering, screenshot capture,
-  asset extraction, and multi-pass visual refinement to match the reference design.
-  Trigger when the user asks to "build this website from a screenshot", "convert screenshot to code",
-  "recreate this UI", or gives an image to implement.
+  truly responsive, visually-verified code projects. Uses headless browser rendering,
+  screenshot capture, asset extraction, multi-viewport responsive audits, and
+  multi-pass visual refinement to match the reference design.
+  Trigger when the user asks to "use Design2Build", "build this website from a screenshot",
+  "convert screenshot to code", "recreate this UI", or gives an image to implement.
 ---
 
-# Screenshot-to-Code: Antigravity Visual Coding Workflow
+# Design2Build: Antigravity Visual Coding Workflow
 
-This skill guides Antigravity through the complete 8-stage Screenshot-to-Code visual reconstruction pipeline.
+This skill guides Antigravity through the complete 8-stage Design2Build visual reconstruction pipeline.
 Rather than generating rough one-shot approximations, this workflow:
 1. Ingests reference visual mockups (via `@reference/...`, chat attachment, or CLI).
 2. Extracts real visual assets (logos, icons, photos) directly into `./assets/`.
 3. Scaffolds a project (or integrates into existing Next.js, Vite, React, or HTML stacks).
-4. Generates initial code with battle-tested stack boilerplates.
+4. Generates initial code with battle-tested stack boilerplates and responsive container hierarchies.
 5. Renders the implementation in a real headless browser (Chromium / Edge fallback).
-6. Runs automated visual comparison and produces diff / composite artifacts.
-7. Iteratively refines the code to resolve layout, typography, color, and spacing discrepancies.
-8. Delivers a self-contained, working project.
+6. Runs multi-viewport responsive health audits (detects horizontal overflow & narrow containers).
+7. Runs automated visual comparison and produces diff / composite artifacts.
+8. Iteratively refines the code to resolve layout, typography, color, and spacing discrepancies.
 
 ---
 
@@ -37,7 +38,7 @@ my-project/
 User prompt:
 ```text
 @reference/homepage.png
-Use Screenshot-to-Code.
+Use Design2Build.
 Recreate this as a working website in the current project.
 ```
 
@@ -45,15 +46,15 @@ Recreate this as a working website in the current project.
 The user attaches or drags an image into chat:
 ```text
 [Attached Image: dashboard.png]
-Use Screenshot-to-Code.
+Use Design2Build.
 Recreate this UI as a React + Tailwind component.
 ```
 *Antigravity saves the attached image to `./reference/reference.png` and begins the pipeline.*
 
-### Method C: Command-Line Interface (`stc`)
+### Method C: Command-Line Interface (`d2b` / `stc`)
 For headless automation or scripting from terminal/PowerShell:
 ```bash
-stc generate ./reference/homepage.png --out ./my-project --stack html_tailwind
+d2b generate ./reference/homepage.png --out ./my-project --stack html_tailwind
 ```
 
 ---

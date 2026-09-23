@@ -48,20 +48,20 @@ def progress_printer(event: WorkflowStepEvent):
 
 
 @click.group()
-@click.version_option(version="0.1.0")
+@click.version_option(version="1.0.1")
 def cli():
-    """Screenshot-to-Code CLI: Reusable, agent-native visual coding workflow."""
+    """Design2Build CLI: Reusable, agent-native visual coding workflow."""
     pass
 
 
 # ----------------------------------------------------------------------
-# stc doctor: Environment and system diagnostics
+# d2b doctor: Environment and system diagnostics
 # ----------------------------------------------------------------------
 @cli.command()
 @click.option("--check-browser/--no-check-browser", default=True, help="Test actual browser launch")
 def doctor(check_browser: bool):
     """Verify environment health, browser engines, dependencies, and adapter readiness."""
-    click.echo(click.style("\n=== Screenshot-to-Code Doctor ===", fg="cyan", bold=True))
+    click.echo(click.style("\n=== Design2Build Doctor ===", fg="cyan", bold=True))
     click.echo("Verifying system dependencies and execution readiness...\n")
 
     has_error = False
@@ -166,20 +166,20 @@ def doctor(check_browser: bool):
         click.echo(click.style("Doctor found issues that need attention before running workflows.", fg="red", bold=True))
         sys.exit(1)
     else:
-        click.echo(click.style("System ready for Screenshot-to-Code visual coding workflows.", fg="green", bold=True))
+        click.echo(click.style("System ready for Design2Build visual coding workflows.", fg="green", bold=True))
 
 
 # ----------------------------------------------------------------------
-# stc status: Configuration and environment status
+# d2b status: Configuration and environment status
 # ----------------------------------------------------------------------
 @cli.command()
 @click.option("--project", "-p", default=".", type=click.Path(path_type=Path), help="Target project directory")
 def status(project: Path):
     """Display installed version, active adapter, browser status, and project context."""
-    click.echo(click.style("\n=== Screenshot-to-Code Status ===", fg="cyan", bold=True))
+    click.echo(click.style("\n=== Design2Build Status ===", fg="cyan", bold=True))
 
     # Version & core
-    click.echo(f"  Version           : 0.1.0 (screenshot-to-code-core)")
+    click.echo(f"  Version           : 1.0.1 (design2build)")
     click.echo(f"  Status            : Ready")
     click.echo(f"  Default Harness   : antigravity")
     click.echo(f"  Available Adapters: antigravity, standalone, codex, claude_code")

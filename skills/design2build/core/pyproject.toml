@@ -3,13 +3,13 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "screenshot-to-code-core"
-version = "0.1.0"
-description = "Reusable, agent-native visual coding engine and workflow extracted from Screenshot-to-Code"
+name = "design2build"
+version = "1.0.1"
+description = "Design2Build: Reusable, agent-native visual coding engine and workflow"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
-    { name = "Antigravity & Screenshot-to-Code Contributors" }
+    { name = "Subhadeep Chakravarty & Design2Build Contributors" }
 ]
 dependencies = [
     "pillow>=10.0.0",
@@ -28,8 +28,11 @@ dev = [
 ]
 
 [project.scripts]
+d2b = "stc_core.cli:cli"
+design2build = "stc_core.cli:cli"
 stc = "stc_core.cli:cli"
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["stc_core*"]
+
