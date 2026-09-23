@@ -56,3 +56,7 @@ client_secret*.json
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Agent Workspace Caches (local only)
+.agents/
+

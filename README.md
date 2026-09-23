@@ -263,9 +263,6 @@ RESPONSIVE REFLOW GRIDS (grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-
 
 ```
 Design2Build/
-├── .agents/
-│   └── skills/
-│       └── design2build/            # Pre-configured skill directory for agents
 ├── .gitignore
 ├── LICENSE                          # MIT License
 ├── README.md                        # Documentation
