@@ -32,9 +32,19 @@ import click
 from stc_core.adapters import get_adapter
 from stc_core.adapters.base import GenerationContext, RefinementContext
 from stc_core.assets import extract_and_save_asset, extract_assets_batch
+from stc_core.config import (
+    ProjectConfig,
+    ProjectState,
+    ProjectType,
+    ReferenceIntent,
+    ResponsiveMode,
+    RunMode,
+    TargetDevice,
+)
 from stc_core.preview import PreviewRenderer, VIEWPORT_SIZES
 from stc_core.preview.renderer import find_system_edge
 from stc_core.prompts.recipes import StackType
+from stc_core.setup import ImplementationPlanGenerator, ProjectSetupInferrer
 from stc_core.verification import compute_visual_difference
 from stc_core.workflow import VisualCodingWorkflow, WorkflowStepEvent
 
@@ -48,7 +58,7 @@ def progress_printer(event: WorkflowStepEvent):
 
 
 @click.group()
-@click.version_option(version="1.0.1")
+@click.version_option(version="1.1.0")
 def cli():
     """Design2Build CLI: Reusable, agent-native visual coding workflow."""
     pass
@@ -179,7 +189,7 @@ def status(project: Path):
     click.echo(click.style("\n=== Design2Build Status ===", fg="cyan", bold=True))
 
     # Version & core
-    click.echo(f"  Version           : 1.0.1 (design2build)")
+    click.echo(f"  Version           : 1.1.0 (design2build)")
     click.echo(f"  Status            : Ready")
     click.echo(f"  Default Harness   : antigravity")
     click.echo(f"  Available Adapters: antigravity, standalone, codex, claude_code")
@@ -214,6 +224,15 @@ def status(project: Path):
         assets_dir = proj_dir / "assets"
         stc_dir = proj_dir / ".stc"
 
+        d2b_cfg = proj_dir / "d2b.config.json"
+        if d2b_cfg.exists():
+            try:
+                loaded_cfg = ProjectConfig.load(d2b_cfg)
+                click.echo(f"  - d2b.config.json : Found ({loaded_cfg.stack}, {loaded_cfg.project_type.value}, {loaded_cfg.target_devices.value})")
+            except Exception:
+                click.echo(f"  - d2b.config.json : Found")
+        else:
+            click.echo(f"  - d2b.config.json : Not configured (run 'd2b setup')")
         click.echo(f"  - index.html      : {'Found' if index_file.exists() else 'Not found'}")
         click.echo(f"  - package.json    : {'Found' if pkg_file.exists() else 'Not found'}")
         click.echo(f"  - reference/      : {'Found' if ref_dir.is_dir() else 'Not found'}")
@@ -500,11 +519,142 @@ def refine(
 
 
 # ----------------------------------------------------------------------
-# stc generate: Full 8-stage visual coding pipeline
+# d2b setup: Intelligent Project Setup & Target Configuration
+# ----------------------------------------------------------------------
+@cli.command()
+@click.argument("reference", required=False, type=click.Path(exists=True, path_type=Path))
+@click.option("--project", "-p", default=".", type=click.Path(path_type=Path), help="Target project directory")
+@click.option("--prompt", "-m", help="User prompt or intent description (e.g. 'Build an isolated pricing card component in React')")
+@click.option("--mode", type=click.Choice(["quick", "advanced"]), default="quick", help="Setup mode: quick (inferred defaults) or advanced (interactive wizard)")
+@click.option("--non-interactive", is_flag=True, default=False, help="Skip interactive prompts and use inferrer defaults directly")
+@click.option("--plan-out", type=click.Path(path_type=Path), help="Path to save generated implementation plan markdown")
+def setup(
+    reference: Optional[Path],
+    project: Path,
+    prompt: Optional[str],
+    mode: str,
+    non_interactive: bool,
+    plan_out: Optional[Path],
+):
+    """Infer project targets, select stack & devices, and generate an implementation plan."""
+    proj_dir = Path(project).resolve()
+    proj_dir.mkdir(parents=True, exist_ok=True)
+
+    click.echo(click.style("\n=== Design2Build Intelligent Project Setup ===", fg="cyan", bold=True))
+    click.echo(f"Workspace: {proj_dir}")
+    if reference:
+        click.echo(f"Reference: {reference.resolve()}")
+    if prompt:
+        click.echo(f"Prompt   : \"{prompt}\"")
+    click.echo("")
+
+    inferrer = ProjectSetupInferrer(workspace_dir=proj_dir)
+    config = inferrer.infer(reference_path=reference, prompt=prompt)
+
+    if non_interactive:
+        click.echo(config.format_summary())
+        config_path = proj_dir / "d2b.config.json"
+        config.save(config_path)
+        click.echo(f"\nConfiguration saved to: {config_path}")
+
+        plan = ImplementationPlanGenerator.generate_plan(config)
+        target_plan_path = plan_out or (proj_dir / "d2b.plan.md")
+        target_plan_path.write_text(plan, encoding="utf-8")
+        click.echo(f"Implementation plan saved to: {target_plan_path}")
+        return
+
+    # Interactive mode
+    if mode == "advanced":
+        click.echo(click.style("--- Advanced Project Target Configuration ---", bold=True))
+
+        pt_choice = click.prompt(
+            "Project Type",
+            type=click.Choice(["full_page", "component", "multipage", "redesign"]),
+            default=config.project_type.value,
+        )
+        config.project_type = ProjectType(pt_choice)
+
+        stack_choice = click.prompt(
+            "Tech Stack",
+            type=click.Choice(["html_tailwind", "react_tailwind", "vue_tailwind", "bootstrap", "ionic_tailwind", "html_css"]),
+            default=config.stack,
+        )
+        config.stack = stack_choice
+
+        dev_choice = click.prompt(
+            "Target Devices",
+            type=click.Choice(["responsive_all", "mobile_desktop", "desktop_only", "mobile_only"]),
+            default=config.target_devices.value,
+        )
+        config.target_devices = TargetDevice(dev_choice)
+
+        resp_choice = click.prompt(
+            "Responsive Strategy",
+            type=click.Choice(["fluid_grid", "adaptive_breakpoints", "fixed_desktop", "fixed_mobile"]),
+            default=config.responsive_mode.value,
+        )
+        config.responsive_mode = ResponsiveMode(resp_choice)
+
+        intent_choice = click.prompt(
+            "Reference Intent",
+            type=click.Choice(["exact_clone", "responsive_system", "component_reference", "design_inspiration"]),
+            default=config.reference_intent.value,
+        )
+        config.reference_intent = ReferenceIntent(intent_choice)
+
+        run_choice = click.prompt(
+            "Run Mode",
+            type=click.Choice(["live_server", "static", "vite_dev"]),
+            default=config.run_mode.value,
+        )
+        config.run_mode = RunMode(run_choice)
+    else:
+        # Quick mode: Display inferred configuration and ask for single confirmation
+        click.echo(config.format_summary())
+        confirmed = click.confirm("\nAccept inferred project configuration?", default=True)
+        if not confirmed:
+            click.echo(click.style("\nSwitching to interactive adjustment...", fg="yellow"))
+            stack_choice = click.prompt(
+                "Tech Stack",
+                type=click.Choice(["html_tailwind", "react_tailwind", "vue_tailwind", "bootstrap", "ionic_tailwind", "html_css"]),
+                default=config.stack,
+            )
+            config.stack = stack_choice
+
+            dev_choice = click.prompt(
+                "Target Devices",
+                type=click.Choice(["responsive_all", "mobile_desktop", "desktop_only", "mobile_only"]),
+                default=config.target_devices.value,
+            )
+            config.target_devices = TargetDevice(dev_choice)
+
+            intent_choice = click.prompt(
+                "Reference Intent",
+                type=click.Choice(["exact_clone", "responsive_system", "component_reference", "design_inspiration"]),
+                default=config.reference_intent.value,
+            )
+            config.reference_intent = ReferenceIntent(intent_choice)
+
+    click.echo("\n" + config.format_summary())
+    config_path = proj_dir / "d2b.config.json"
+    config.save(config_path)
+    click.echo(f"\nConfiguration saved to: {click.style(str(config_path), fg='green', bold=True)}")
+
+    plan = ImplementationPlanGenerator.generate_plan(config)
+    target_plan_path = plan_out or (proj_dir / "d2b.plan.md")
+    target_plan_path.write_text(plan, encoding="utf-8")
+    click.echo(f"Implementation plan saved to: {click.style(str(target_plan_path), fg='green', bold=True)}")
+    click.echo("\nReady to implement! Run:")
+    ref_arg = f" {reference}" if reference else " <reference.png>"
+    click.echo(click.style(f"  d2b generate{ref_arg} --config {config_path.name}", fg="cyan", bold=True))
+
+
+# ----------------------------------------------------------------------
+# d2b generate: Visual coding pipeline with configuration
 # ----------------------------------------------------------------------
 @cli.command()
 @click.argument("screenshot", type=click.Path(exists=True, dir_okay=False, path_type=Path))
-@click.option("--stack", default="html_tailwind", help="Target stack: html_tailwind, react_tailwind, vue_tailwind, bootstrap, html_css")
+@click.option("--stack", default=None, help="Target stack: html_tailwind, react_tailwind, vue_tailwind, bootstrap, html_css")
 @click.option("--out", "-o", "--project", "-p", default="./output", type=click.Path(path_type=Path), help="Target output / project directory")
 @click.option("--agent", "-a", default="antigravity", help="Agent harness: antigravity, standalone, codex, claude_code")
 @click.option("--boxes", help="JSON string or file containing bounding boxes to extract")
@@ -512,9 +662,11 @@ def refine(
 @click.option("--code", type=click.Path(exists=True, path_type=Path), help="Optional initial code file to verify/refine directly")
 @click.option("--max-passes", default=2, type=int, help="Maximum visual refinement passes")
 @click.option("--instructions", help="Additional user requirements (e.g. 'Add functional tabs')")
+@click.option("--config", "config_file", type=click.Path(exists=True, path_type=Path), help="Path to d2b.config.json or custom configuration file")
+@click.option("--interactive", is_flag=True, default=False, help="Launch setup wizard before code generation")
 def generate(
     screenshot: Path,
-    stack: str,
+    stack: Optional[str],
     out: Path,
     agent: str,
     boxes: Optional[str],
@@ -522,11 +674,45 @@ def generate(
     code: Optional[Path],
     max_passes: int,
     instructions: Optional[str],
+    config_file: Optional[Path],
+    interactive: bool,
 ):
-    """Execute the full 8-step visual coding workflow on a screenshot."""
-    click.echo(click.style("\n=== Screenshot-to-Code Workflow ===", fg="green", bold=True))
+    """Execute the visual coding workflow on a screenshot with target configuration."""
+    proj_dir = Path(out).resolve()
+    proj_dir.mkdir(parents=True, exist_ok=True)
+
+    # Determine ProjectConfig
+    active_config: Optional[ProjectConfig] = None
+    if interactive:
+        inferrer = ProjectSetupInferrer(workspace_dir=proj_dir)
+        active_config = inferrer.infer(reference_path=screenshot, prompt=instructions)
+        click.echo("\n" + active_config.format_summary())
+        if click.confirm("Accept inferred project configuration?", default=True):
+            active_config.save(proj_dir / "d2b.config.json")
+        else:
+            pt = click.prompt("Project Type", type=click.Choice(["full_page", "component", "multipage", "redesign"]), default=active_config.project_type.value)
+            st = click.prompt("Tech Stack", type=click.Choice(["html_tailwind", "react_tailwind", "vue_tailwind", "bootstrap", "ionic_tailwind", "html_css"]), default=active_config.stack)
+            td = click.prompt("Target Devices", type=click.Choice(["responsive_all", "mobile_desktop", "desktop_only", "mobile_only"]), default=active_config.target_devices.value)
+            active_config.project_type = ProjectType(pt)
+            active_config.stack = st
+            active_config.target_devices = TargetDevice(td)
+            active_config.save(proj_dir / "d2b.config.json")
+    elif config_file:
+        active_config = ProjectConfig.load(config_file)
+    elif (proj_dir / "d2b.config.json").exists():
+        active_config = ProjectConfig.load(proj_dir / "d2b.config.json")
+    elif Path("d2b.config.json").exists():
+        active_config = ProjectConfig.load(Path("d2b.config.json"))
+
+    effective_stack = stack or (active_config.stack if active_config else "html_tailwind")
+
+    click.echo(click.style("\n=== Design2Build Workflow ===", fg="green", bold=True))
     click.echo(f"Input: {screenshot}")
-    click.echo(f"Stack: {stack} | Harness: {agent} | Output: {out}\n")
+    click.echo(f"Stack: {effective_stack} | Harness: {agent} | Output: {proj_dir}")
+    if active_config:
+        click.echo(f"Type : {active_config.project_type.value} | Target: {active_config.target_devices.value} | Run: {active_config.run_mode.value}\n")
+    else:
+        click.echo("")
 
     asset_boxes = []
     if boxes_file:
@@ -548,12 +734,13 @@ def generate(
     async def _exec():
         return await workflow.run(
             screenshot_path=screenshot,
-            output_dir=out,
-            stack=stack,  # type: ignore
+            output_dir=proj_dir,
+            stack=effective_stack,  # type: ignore
             asset_boxes=asset_boxes,
             initial_code=initial_code_str,
             max_refinement_passes=max_passes,
             additional_instructions=instructions,
+            config=active_config,
         )
 
     try:

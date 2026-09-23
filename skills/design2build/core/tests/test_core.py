@@ -195,7 +195,7 @@ def test_cli_doctor_and_status():
     res_stat = runner.invoke(cli, ["status"])
     assert res_stat.exit_code == 0
     assert "Design2Build Status" in res_stat.output
-    assert "1.0.1" in res_stat.output
+    assert "1.1.0" in res_stat.output
 
 
 
@@ -259,4 +259,167 @@ async def test_responsive_diagnostics_and_overflow_detection():
         assert any("monster-box" in el for el in diag_overflow.overflow_elements)
     finally:
         await renderer.close()
+
+
+def test_project_config_serialization():
+    """Test ProjectConfig dataclass, viewports resolution, and JSON persistence."""
+    from stc_core.config import (
+        ProjectConfig,
+        ProjectType,
+        TargetDevice,
+        ResponsiveMode,
+        ReferenceIntent,
+        ProjectState,
+        RunMode,
+    )
+
+    cfg = ProjectConfig(
+        project_type=ProjectType.COMPONENT,
+        target_devices=TargetDevice.MOBILE_DESKTOP,
+        responsive_mode=ResponsiveMode.ADAPTIVE_BREAKPOINTS,
+        reference_intent=ReferenceIntent.COMPONENT_REFERENCE,
+        project_state=ProjectState.EXISTING_PROJECT,
+        run_mode=RunMode.VITE_DEV,
+        stack="react_tailwind",
+    )
+
+    viewports = cfg.resolve_viewports()
+    assert "mobile" in viewports
+    assert any("desktop" in v for v in viewports)
+
+    summary = cfg.format_summary()
+    assert "Component" in summary
+    assert "react_tailwind" in summary
+    assert "Vite Dev" in summary
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        cfg_file = Path(tmpdir) / "d2b.config.json"
+        cfg.save(cfg_file)
+        assert cfg_file.exists()
+
+        loaded = ProjectConfig.load(cfg_file)
+        assert loaded.project_type == ProjectType.COMPONENT
+        assert loaded.target_devices == TargetDevice.MOBILE_DESKTOP
+        assert loaded.stack == "react_tailwind"
+        assert loaded.run_mode == RunMode.VITE_DEV
+
+
+def test_project_setup_inferrer_from_prompt():
+    """Verify inference engine deduces stack, type, and devices from prompt keywords."""
+    from stc_core.setup import ProjectSetupInferrer
+    from stc_core.config import ProjectType, TargetDevice, RunMode, ReferenceIntent
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        inferrer = ProjectSetupInferrer(workspace_dir=Path(tmpdir))
+
+        # Prompt with React, component, mobile & desktop
+        prompt1 = "Build an isolated pricing card component in React with Tailwind for mobile and desktop"
+        cfg1 = inferrer.infer(prompt=prompt1)
+        assert cfg1.stack == "react_tailwind"
+        assert cfg1.project_type == ProjectType.COMPONENT
+        assert cfg1.target_devices == TargetDevice.MOBILE_DESKTOP
+        assert cfg1.reference_intent == ReferenceIntent.COMPONENT_REFERENCE
+        assert cfg1.run_mode == RunMode.VITE_DEV
+
+        # Prompt with redesign and bootstrap
+        prompt2 = "Modernize this legacy website redesign into bootstrap"
+        cfg2 = inferrer.infer(prompt=prompt2)
+        assert cfg2.stack == "bootstrap"
+        assert cfg2.project_type == ProjectType.REDESIGN
+
+
+def test_project_setup_inferrer_from_workspace():
+    """Verify inference engine detects framework and dependencies from package.json."""
+    import json
+    from stc_core.setup import ProjectSetupInferrer
+    from stc_core.config import ProjectState, RunMode
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        workspace = Path(tmpdir)
+        pkg_json = workspace / "package.json"
+        pkg_json.write_text(
+            json.dumps({
+                "name": "my-next-app",
+                "dependencies": {
+                    "next": "14.2.0",
+                    "react": "18.2.0",
+                    "tailwindcss": "3.4.0"
+                }
+            }),
+            encoding="utf-8"
+        )
+
+        inferrer = ProjectSetupInferrer(workspace_dir=workspace)
+        cfg = inferrer.infer()
+
+        assert cfg.stack == "react_tailwind"
+        assert cfg.project_state == ProjectState.EXISTING_PROJECT
+        assert cfg.run_mode == RunMode.VITE_DEV
+
+
+def test_implementation_plan_generator():
+    """Verify structured plan generation customized to ProjectConfig."""
+    from stc_core.config import ProjectConfig, ProjectType, TargetDevice, RunMode
+    from stc_core.setup import ImplementationPlanGenerator
+
+    cfg = ProjectConfig(
+        project_type=ProjectType.COMPONENT,
+        target_devices=TargetDevice.MOBILE_DESKTOP,
+        run_mode=RunMode.STATIC,
+        stack="html_tailwind",
+    )
+
+    plan = ImplementationPlanGenerator.generate_plan(cfg)
+    assert "IMPLEMENTATION PLAN" in plan.upper()
+    assert "COMPONENT" in plan.upper()
+    assert "Mobile Desktop" in plan
+    assert "Milestones" in plan
+
+
+
+def test_cli_setup_non_interactive():
+    """Test d2b setup command in non-interactive mode via Click CliRunner."""
+    from click.testing import CliRunner
+    from stc_core.cli import cli
+
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        res = runner.invoke(
+            cli,
+            [
+                "setup",
+                "--project", tmpdir,
+                "--prompt", "Build a responsive hero banner in React with Tailwind",
+                "--non-interactive",
+            ]
+        )
+        assert res.exit_code == 0
+        assert "Design2Build Intelligent Project Setup" in res.output
+        assert "Configuration saved to" in res.output
+
+        cfg_file = Path(tmpdir) / "d2b.config.json"
+        plan_file = Path(tmpdir) / "d2b.plan.md"
+        assert cfg_file.exists()
+        assert plan_file.exists()
+        assert "react_tailwind" in cfg_file.read_text(encoding="utf-8")
+
+
+def test_replication_instructions_with_config():
+    """Verify get_replication_instructions tailors output when ProjectConfig is provided."""
+    from stc_core.config import ProjectConfig, ProjectType, TargetDevice, ReferenceIntent
+    from stc_core.prompts.recipes import get_replication_instructions
+
+    cfg = ProjectConfig(
+        project_type=ProjectType.COMPONENT,
+        target_devices=TargetDevice.MOBILE_ONLY,
+        reference_intent=ReferenceIntent.COMPONENT_REFERENCE,
+        stack="react_tailwind",
+    )
+
+    prompt = get_replication_instructions(config=cfg)
+    assert "Selected stack: react_tailwind" in prompt
+    assert "Target: ISOLATED COMPONENT" in prompt or "Isolated Component" in prompt
+    assert "Mobile-First / Mobile-Only" in prompt
+    assert "max-w-7xl" in prompt
+
 

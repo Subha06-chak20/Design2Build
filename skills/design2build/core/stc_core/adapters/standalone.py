@@ -55,6 +55,7 @@ class StandaloneAdapter(HarnessAdapter):
             stack=context.stack,  # type: ignore
             extracted_assets=context.extracted_assets,
             additional_instructions=context.additional_instructions,
+            config=context.config,
         )
         gemini_key = self.gemini_api_key or os.getenv("GEMINI_API_KEY")
         if gemini_key:

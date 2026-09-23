@@ -50,14 +50,17 @@ When modern AI agents generate frontends from screenshot images, they frequently
 - **Skill Name**: `design2build`
 - **Trigger Phrasing**: *"use Design2Build"*, *"convert this screenshot to code"*, *"build this website from reference"*, *"recreate this UI"*, or uploading a UI mockup to Antigravity.
 - **Capabilities**:
-  - **Stage 1 — Ingestion & Viewport Detection**: Analyzes layout hierarchy, color palette, fonts, and aspect ratio.
-  - **Stage 2 — Asset Extraction**: Normalizes bounding boxes and crops assets using generous pixel geometry.
-  - **Stage 3 — Scaffold**: Initializes workspace with CDN boilerplates (Tailwind, React 18, Vue 3, Ionic, Bootstrap).
-  - **Stage 4 — Responsive Implementation**: Employs responsive container patterns forbidding hardcoded screenshot widths.
-  - **Stage 5 — Multi-Viewport Browser Render**: Captures screenshots across mobile, tablet, and desktop viewports.
-  - **Stage 6 — Responsive Health Audit**: Checks for `scrollWidth > innerWidth` overflow and runtime console errors.
-  - **Stage 7 — Perceptual Visual Verification**: Generates side-by-side composites and diff heatmaps.
-  - **Stage 8 — Iterative Refinement**: Applies surgical corrections directly to discrepant DOM elements.
+  - **Stage 0 — Intelligent Project Setup**: Context-aware inference from user prompts, workspace files (`package.json`), and reference aspect ratios to determine stack, devices, and run mode without redundant questions.
+  - **Stage 1 — Implementation Plan Confirmation**: Generates a structured milestone plan customized to the project and confirms alignment before generating code.
+  - **Stage 2 — Ingestion & Viewport Detection**: Analyzes layout hierarchy, color palette, fonts, and aspect ratio.
+  - **Stage 3 — Asset Extraction**: Normalizes bounding boxes and crops assets using generous pixel geometry into `./assets/`.
+  - **Stage 4 — Stack Selection**: Configures CDN boilerplates (Tailwind, React 18, Vue 3, Ionic, Bootstrap).
+  - **Stage 5 — Scaffolding & Responsive Implementation**: Generates code adhering to fluid container hierarchy patterns forbidding hardcoded screenshot widths.
+  - **Stage 6 — Multi-Viewport Browser Render**: Captures screenshots across mobile, tablet, desktop, and wide desktop viewports.
+  - **Stage 7 — Responsive Health Audit**: Checks for `scrollWidth > innerWidth` overflow and runtime console errors.
+  - **Stage 8 — Perceptual Visual Verification**: Generates side-by-side composites and diff heatmaps against reference images.
+  - **Stage 9 — Iterative Refinement & Packaging**: Applies surgical corrections directly to discrepant DOM elements and packages self-contained files.
+
 
 ---
 
@@ -131,16 +134,58 @@ Once installed, simply send your screenshot or design to Antigravity and prompt:
 
 ## 💻 CLI Quick Reference (`d2b`)
 
-The package includes a fast standalone CLI (`d2b`, aliased also as `design2build` and `stc`) to test, preview, and audit your code:
+The package includes a fast standalone CLI (`d2b`, aliased also as `design2build` and `stc`) to test, preview, audit, and scaffold your code:
 
 | Command | Description |
 | :--- | :--- |
+| `d2b setup [REF] [--prompt "..."]` | Run intelligent project setup (infers stack, devices, run mode, and generates plan) |
+| `d2b setup --mode advanced` | Launch full interactive setup wizard for fine-grained configuration |
+| `d2b generate <REF> [--config CFG]` | Run end-to-end visual coding workflow with project target configuration |
+| `d2b generate <REF> --interactive` | Launch setup wizard then immediately generate code |
 | `d2b doctor` | Check environment, dependencies, and headless browser status |
-| `d2b status` | Display package version, viewports, and supported stacks |
+| `d2b status` | Display package version, viewports, and detected `d2b.config.json` status |
 | `d2b preview index.html --viewport all` | Render and capture screenshots across all 4 responsive viewports |
 | `d2b preview index.html --viewport mobile` | Render mobile viewport (375x812px) |
 | `d2b check reference.png --responsive` | Run visual diff comparison and multi-viewport responsive health audit |
-| `d2b crop reference.png --coords [ymin,xmin,ymax,xmax] --out ./assets/logo.png` | Crop asset with outward-rounding geometry |
+| `d2b extract-assets <REF> --box "..."` | Crop asset with outward-rounding pixel geometry |
+
+### Example Intelligent Setup Output (`d2b setup`)
+```text
+=== Design2Build Intelligent Project Setup ===
+Workspace: /path/to/my-project
+Prompt   : "Build an isolated pricing card component in React with Tailwind for mobile and desktop"
+
+----------------------------------------
+## DESIGN2BUILD PROJECT CONFIGURATION 
+
+Project Type:
+  Component
+
+Technology / Stack:
+  react_tailwind
+
+Target Devices:
+  Mobile + Desktop
+
+Responsive Mode:
+  Adaptive Breakpoints
+
+Reference Intent:
+  Isolated Component Reference
+
+Project State:
+  New Project
+
+Run Mode:
+  Vite Development Server
+
+Backend:
+  None (Frontend Only — Zero Python/FastAPI Server Required)
+----------------------------------------
+
+Configuration saved to: ./d2b.config.json
+Implementation plan saved to: ./d2b.plan.md
+```
 
 ### Example Responsive Health Audit Output
 ```text
@@ -161,10 +206,11 @@ Target Viewport      : desktop_wide (1280x832px)
 ## 🧱 Supported Frontend Stacks
 
 - **`html_tailwind`** (Default): Standalone HTML5 + Tailwind CSS CDN + Font Awesome 6 + Google Fonts.
-- **`react_tailwind`**: React 18 UMD + Babel Standalone 7.25.6 + Tailwind CSS.
+- **`react_tailwind`**: React 18 UMD + Babel Standalone 7.25.6 + Tailwind CSS (Vite / Live Server compatible).
 - **`vue_tailwind`**: Vue 3 Global CDN + Tailwind CSS.
 - **`bootstrap`**: Standard Bootstrap 5.3.2 + Bootstrap Icons.
 - **`ionic_tailwind`**: Ionic 5+ Mobile Web Component CDN + Tailwind CSS.
+- **`html_css`**: Pure semantic HTML5 + responsive vanilla CSS.
 
 ---
 
@@ -200,7 +246,7 @@ Design2Build/
 ├── README.md                        # Documentation
 └── skills/
     └── design2build/                # Primary Visual Coding Skill
-        ├── SKILL.md                 # Antigravity skill specification & runbook
+        ├── SKILL.md                 # Antigravity skill specification & 10-stage runbook
         ├── references/
         │   ├── stacks.md            # CDN boilerplates & stack definitions
         │   └── verification_checklist.md
@@ -210,7 +256,7 @@ Design2Build/
         │   └── render_preview.py    # Headless browser preview renderer
         └── core/                    # Core Python engine & CLI
             ├── README.md
-            ├── pyproject.toml       # Package configuration (d2b / design2build / stc)
+            ├── pyproject.toml       # Package configuration (d2b v1.1.0)
             ├── requirements.txt
             ├── stc_core/            # Core library modules
             │   ├── adapters/        # Harness adapters (Antigravity, Standalone, etc.)
@@ -218,17 +264,19 @@ Design2Build/
             │   ├── preview/         # Playwright multi-viewport rendering
             │   ├── prompts/         # Responsive recipes & prompt engineering
             │   ├── verification/    # Perceptual diff & comparator
-            │   ├── cli.py           # Click CLI implementation
-            │   └── workflow.py      # 8-stage orchestrator
+            │   ├── config.py        # ProjectConfig & target configuration models
+            │   ├── setup.py         # Context inference & plan generator
+            │   ├── cli.py           # Click CLI implementation (setup, generate, doctor, check)
+            │   └── workflow.py      # Visual coding orchestrator with target config
             └── tests/
-                └── test_core.py     # 11 automated unit & integration tests
+                └── test_core.py     # 17 automated unit & integration tests
 ```
 
 ---
 
 ## 🧪 Testing
 
-Run the full pytest suite to verify all core components, asset extractors, prompt directives, and responsive diagnostics:
+Run the full pytest suite to verify all core components, inference rules, plan generation, asset extractors, prompt directives, and responsive diagnostics:
 
 ```bash
 pytest skills/design2build/core/tests/test_core.py -v

@@ -30,6 +30,7 @@ class GenerationContext:
     extracted_assets: Dict[str, str] = field(default_factory=dict)
     additional_instructions: Optional[str] = None
     project_dir: Optional[Path] = None
+    config: Optional[Any] = None
 
 
 @dataclass
@@ -42,6 +43,7 @@ class RefinementContext:
     project_dir: Optional[Path] = None
     selected_element_html: Optional[str] = None
     iteration: int = 1
+    config: Optional[Any] = None
 
 
 class HarnessAdapter(ABC):

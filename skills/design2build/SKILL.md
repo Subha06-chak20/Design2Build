@@ -11,22 +11,25 @@ description: >-
 
 # Design2Build: Antigravity Visual Coding Workflow
 
-This skill guides Antigravity through the complete 8-stage Design2Build visual reconstruction pipeline.
+This skill guides Antigravity through the complete 10-stage Design2Build visual reconstruction pipeline.
 Rather than generating rough one-shot approximations, this workflow:
-1. Ingests reference visual mockups (via `@reference/...`, chat attachment, or CLI).
-2. Extracts real visual assets (logos, icons, photos) directly into `./assets/`.
-3. Scaffolds a project (or integrates into existing Next.js, Vite, React, or HTML stacks).
-4. Generates initial code with battle-tested stack boilerplates and responsive container hierarchies.
-5. Renders the implementation in a real headless browser (Chromium / Edge fallback).
-6. Runs multi-viewport responsive health audits (detects horizontal overflow & narrow containers).
-7. Runs automated visual comparison and produces diff / composite artifacts.
-8. Iteratively refines the code to resolve layout, typography, color, and spacing discrepancies.
+0. **Intelligent Project Setup**: Automatically infers project type, stack, target devices, responsive mode, and run mode from the prompt, workspace, and reference images—asking only when ambiguity remains.
+1. **Implementation Plan Confirmation**: Generates a structured milestone plan customized to the project and confirms alignment before generating code.
+2. Ingests reference visual mockups (via `@reference/...`, chat attachment, or CLI).
+3. Extracts real visual assets (logos, icons, photos) directly into `./assets/`.
+4. Scaffolds a project (or integrates into existing Next.js, Vite, React, or HTML stacks).
+5. Generates initial code with battle-tested stack boilerplates and responsive container hierarchies.
+6. Renders the implementation in a real headless browser (Chromium / Edge fallback).
+7. Runs multi-viewport responsive health audits (detects horizontal overflow & narrow containers).
+8. Runs automated visual comparison and produces diff / composite artifacts.
+9. Iteratively refines the code to resolve layout, typography, color, and spacing discrepancies.
+10. Delivers a clean, self-contained project with zero Python/backend server dependencies.
 
 ---
 
 ## 3 Unified Input Methods
 
-All input methods converge on the exact same 8-stage visual coding pipeline:
+All input methods converge on the exact same visual coding pipeline:
 
 ### Method A: In-Project Reference (Preferred)
 The user places the image inside the workspace:
@@ -54,7 +57,11 @@ Recreate this UI as a React + Tailwind component.
 ### Method C: Command-Line Interface (`d2b` / `stc`)
 For headless automation or scripting from terminal/PowerShell:
 ```bash
-d2b generate ./reference/homepage.png --out ./my-project --stack html_tailwind
+# Intelligent setup wizard & plan generation
+d2b setup ./reference/homepage.png --prompt "Recreate homepage with fluid grid in Tailwind"
+
+# Direct automated generation with configuration
+d2b generate ./reference/homepage.png --out ./my-project --config d2b.config.json
 ```
 
 ---
@@ -90,7 +97,7 @@ d2b generate ./reference/homepage.png --out ./my-project --stack html_tailwind
 ### Mode 1: Empty Directory (New Project Scaffolding)
 - Prompt user if stack is ambiguous: "What stack should I build this in? 1. Plain HTML/CSS/JS (Live Server compatible), 2. React, 3. Existing project/framework".
 - If Plain HTML/CSS/JS: Initialize project with `index.html`, `style.css`, `script.js`, and `./assets/`.
-- If Tailwind CDN: `index.html`, `./assets/`, `README.md`.
+- If Tailwind CDN: `index.html`, `./assets/`, `README.md`, `d2b.config.json`.
 - No Python backend server is created or required! Open directly with VS Code Live Server ("Go Live") or double-click `index.html`.
 
 ### Mode 2: Existing Project Integration (Non-Destructive)
@@ -124,7 +131,9 @@ When multiple reference images are provided:
 During execution, keep user communication clean, focused, and progress-driven. Emit the structured status checklist:
 
 ```text
-Screenshot-to-Code
+Design2Build
+✓ Project Setup: Inferred React + Tailwind | Responsive (All) | Component Reference
+✓ Implementation Plan: Approved by user
 ✓ Reference loaded: reference/homepage.png
 ✓ Screenshot analyzed: layout hierarchy, colors, typography, fluid grid structure
 ✓ Assets identified & extracted to ./assets/
@@ -141,9 +150,28 @@ Screenshot-to-Code
 
 ---
 
-## The 8-Stage Procedure
+## The 10-Stage Procedure
 
-### Stage 1: Analyze Reference Screenshot
+### Stage 0: Intelligent Project Setup & Target Configuration
+Before writing any code or modifying files:
+1. Run automated inference:
+   - Check prompt for explicit stack, scope (component vs full page), or device requests.
+   - Check workspace for existing `package.json` (Vite, Next.js, React).
+   - Inspect reference dimensions (vertical vs landscape vs multi-reference).
+2. Skip questions for everything already determined!
+3. If ambiguity remains, ask targeted questions (Quick mode vs Advanced mode).
+4. Save configuration to `d2b.config.json` and display formatted configuration summary.
+
+### Stage 1: Generate & Confirm Implementation Plan
+1. Produce a structured, custom implementation plan mapping out milestones:
+   - Scope and target stack.
+   - Visual asset extraction.
+   - Responsive layout architecture.
+   - Headless verification viewports.
+   - Refinement criteria.
+2. Present plan to user for explicit confirmation before execution.
+
+### Stage 2: Analyze Reference Screenshot
 Examine visual structure:
 - **Layout Hierarchy**: Header/navbar, hero section, content grids/cards, sidebars, footer.
 - **Fluid Proportions**: Infer how elements scale outside the observed viewport. Distinguish fixed elements (icons, logos, badges) from fluid elements (containers, heroes, card grids).
@@ -151,24 +179,24 @@ Examine visual structure:
 - **Color Palette**: Exact background tones (`bg-slate-50`, `#0f172a`), card surfaces (`bg-white`), accent colors (`#3b82f6`, `#10b981`), borders (`border-slate-200`).
 - **Spacing & Alignment**: Centered container max-widths (`max-w-7xl mx-auto`), responsive page paddings (`px-4 sm:px-6 lg:px-8`), flex/grid gaps (`gap-4 md:gap-8`).
 
-### Stage 2: Identify and Extract Visual Assets
+### Stage 3: Identify and Extract Visual Assets
 Do not leave logos or hero graphics as empty placeholders.
 1. Estimate normalized 0-1000 bounding boxes: `[ymin, xmin, ymax, xmax]`.
-2. Crop and save using `stc`:
+2. Crop and save using `d2b`:
    ```bash
-   stc extract-assets <reference_path> --box "ymin,xmin,ymax,xmax" --name "logo" --out-dir "<project_dir>/assets"
+   d2b extract-assets <reference_path> --box "ymin,xmin,ymax,xmax" --name "logo" --out-dir "<project_dir>/assets"
    ```
    Or batch extract:
    ```bash
-   stc extract-assets <reference_path> --boxes-file assets.json --out-dir "<project_dir>/assets"
+   d2b extract-assets <reference_path> --boxes-file assets.json --out-dir "<project_dir>/assets"
    ```
 3. Extracted assets are placed in `./assets/` and referenced in HTML as `<img src="./assets/logo.png">`. Use `object-cover` or `object-contain`.
 
-### Stage 3: Choose Implementation Stack & Boilerplate
-Select the appropriate recipe from [Stack Boilerplates](./references/stacks.md).
+### Stage 4: Choose Implementation Stack & Boilerplate
+Select the appropriate recipe from [Stack Boilerplates](./references/stacks.md) matching `d2b.config.json`.
 Default to `html_tailwind` (or modular `html_css` if Plain HTML/CSS/JS is requested).
 
-### Stage 4: Scaffolding and Code Generation
+### Stage 5: Scaffolding and Code Generation
 1. Write the code into the project (`<project_dir>/index.html` or target component).
 2. Adhere to core replication guidelines:
    - Use the exact copy and text visible in the reference.
@@ -182,24 +210,24 @@ Default to `html_tailwind` (or modular `html_css` if Plain HTML/CSS/JS is reques
      - Grids: Responsive breakpoints (`grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5`).
      - Zero horizontal overflow (`overflow-x-hidden` on body).
 
-### Stage 5: Render Across Responsive Viewports
-Capture pixel-accurate browser screenshots across all standard viewports:
+### Stage 6: Render Across Responsive Viewports
+Capture pixel-accurate browser screenshots across configured viewports:
 ```bash
-stc preview "<project_dir>/index.html" --out "<project_dir>/preview.png" --viewport all
+d2b preview "<project_dir>/index.html" --out "<project_dir>/preview.png" --viewport all
 ```
 Or check individual viewports:
 ```bash
-stc preview "<project_dir>/index.html" --out "<project_dir>/preview_mobile.png" --viewport mobile
-stc preview "<project_dir>/index.html" --out "<project_dir>/preview_tablet.png" --viewport tablet
-stc preview "<project_dir>/index.html" --out "<project_dir>/preview_desktop.png" --viewport desktop
-stc preview "<project_dir>/index.html" --out "<project_dir>/preview_wide.png" --viewport large_desktop
+d2b preview "<project_dir>/index.html" --out "<project_dir>/preview_mobile.png" --viewport mobile
+d2b preview "<project_dir>/index.html" --out "<project_dir>/preview_tablet.png" --viewport tablet
+d2b preview "<project_dir>/index.html" --out "<project_dir>/preview_desktop.png" --viewport desktop
+d2b preview "<project_dir>/index.html" --out "<project_dir>/preview_wide.png" --viewport large_desktop
 ```
 The renderer uses Playwright Chromium (or system Edge fallback), awaits `networkidle`, verifies `document.fonts.ready`, audits horizontal overflow, and captures full-resolution PNGs.
 
-### Stage 6: Visual & Responsive Verification
+### Stage 7: Visual & Responsive Verification
 Compare the rendered browser capture against the reference screenshot and run responsive checks:
 ```bash
-stc check <reference_path> --project "<project_dir>" --responsive
+d2b check <reference_path> --project "<project_dir>" --responsive
 ```
 Inspect the comparison metrics and checklist:
 - Similarity Score (evaluated against matching reference aspect ratio).
@@ -210,7 +238,7 @@ Inspect the comparison metrics and checklist:
   - [✓] Wide Desktop (1440x900): Content container expands gracefully (no narrow centered strip)
   - [✓] Zero runtime JavaScript errors or broken assets
 
-### Stage 7: Iterative Refinement
+### Stage 8: Iterative Refinement
 1. Identify specific discrepancies from the diff composite and responsive diagnostics.
 2. If desktop is too narrow, remove fixed width values (`w-[...]`) and apply `max-w-7xl mx-auto px-4 sm:px-6 lg:px-8`.
 3. If cards overflow on mobile, adjust grid breakpoints (`grid-cols-1 sm:grid-cols-2`).
@@ -218,9 +246,9 @@ Inspect the comparison metrics and checklist:
 5. Re-render preview and verify score improvement.
 6. Continue refining until the design closely matches the reference ($\ge 90\%$ similarity) and passes all responsive checks.
 
-### Stage 8: Deliver Final Working Project
+### Stage 9: Deliver Final Working Project
 Ensure the project is completely runnable without any backend servers:
-- Project files: `index.html` (or `index.html` + `style.css` + `script.js`), `assets/`, `README.md`.
+- Project files: `index.html` (or component files), `assets/`, `d2b.config.json`, `README.md`.
 - No broken asset links (404s) or missing fonts.
 - Provide user instructions to test locally:
   - **VS Code Live Server**: Right-click `index.html` $\to$ **Open with Live Server**.

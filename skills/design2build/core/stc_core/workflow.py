@@ -20,6 +20,7 @@ from typing import Any, Callable, Dict, List, Optional
 from stc_core.adapters import HarnessAdapter, get_adapter
 from stc_core.adapters.base import GenerationContext, RefinementContext
 from stc_core.assets import ExtractedAsset, extract_assets_batch
+from stc_core.config import ProjectConfig, TargetDevice
 from stc_core.preview import PreviewRenderer
 from stc_core.project import scaffold_project
 from stc_core.prompts.recipes import STACK_BOILERPLATES, StackType
@@ -74,12 +75,15 @@ class VisualCodingWorkflow:
         initial_code: Optional[str] = None,
         max_refinement_passes: int = 2,
         additional_instructions: Optional[str] = None,
+        config: Optional[ProjectConfig] = None,
     ) -> WorkflowResult:
-        """Run the complete 8-step visual coding workflow."""
+        """Run the complete visual coding workflow with project target configuration."""
         output_dir = Path(output_dir).resolve()
         output_dir.mkdir(parents=True, exist_ok=True)
         assets_dir = output_dir / "assets"
         assets_dir.mkdir(parents=True, exist_ok=True)
+
+        effective_stack: StackType = config.stack if (config and config.stack) else stack  # type: ignore
 
         try:
             # [1/8] Analyzing Screenshot
@@ -96,37 +100,64 @@ class VisualCodingWorkflow:
 
             # [3/8] Scaffolding Project
             self._notify(3, "Preparing project workspace", f"Setting up {output_dir.name} and assets")
-            code = initial_code or STACK_BOILERPLATES.get(stack, STACK_BOILERPLATES["html_tailwind"])
-            index_file = scaffold_project(output_dir, code, stack=stack, extracted_assets=asset_map)
+            code = initial_code or STACK_BOILERPLATES.get(effective_stack, STACK_BOILERPLATES["html_tailwind"])
+            index_file = scaffold_project(output_dir, code, stack=effective_stack, extracted_assets=asset_map, config=config)
 
             # [4/8] Generating Initial Code Implementation
-            self._notify(4, "Implementing UI code", f"Applying {stack} design and structure")
+            self._notify(4, "Implementing UI code", f"Applying {effective_stack} design and structure")
             if not initial_code:
                 gen_context = GenerationContext(
                     screenshot_path=screenshot_path,
-                    stack=stack,
+                    stack=effective_stack,
                     extracted_assets=asset_map,
                     additional_instructions=additional_instructions,
                     project_dir=output_dir,
+                    config=config,
                 )
                 code = await self.adapter.generate_code(gen_context)
-                index_file = scaffold_project(output_dir, code, stack=stack, extracted_assets=asset_map)
+                index_file = scaffold_project(output_dir, code, stack=effective_stack, extracted_assets=asset_map, config=config)
 
             # [5/8] Starting Headless Browser & Rendering Previews
-            self._notify(5, "Starting browser and rendering page", "Capturing desktop and mobile views")
+            self._notify(5, "Starting browser and rendering page", "Capturing responsive preview viewports")
             desktop_preview = output_dir / "preview_desktop.png"
             mobile_preview = output_dir / "preview_mobile.png"
-            
-            await self.renderer.capture_html(code, viewport="desktop", output_path=desktop_preview)
-            await self.renderer.capture_html(code, viewport="mobile", output_path=mobile_preview)
+
+            # Render configured viewports if specified
+            if config:
+                for vp_name in config.resolve_viewports():
+                    vp_out = output_dir / f"preview_{vp_name}.png"
+                    await self.renderer.capture_html(code, viewport=vp_name, output_path=vp_out)
+                    if vp_name in ("desktop", "desktop_wide", "large_desktop") and (not desktop_preview.exists() or vp_name == "desktop"):
+                        desktop_preview = vp_out
+                    if vp_name == "mobile":
+                        mobile_preview = vp_out
+
+            # Ensure primary desktop & mobile exist
+            if not desktop_preview.exists():
+                await self.renderer.capture_html(code, viewport="desktop", output_path=desktop_preview)
+            if not mobile_preview.exists():
+                await self.renderer.capture_html(code, viewport="mobile", output_path=mobile_preview)
+
+            # Determine best comparison target (mobile if reference is vertical or mobile-only)
+            compare_target = desktop_preview
+            if config and config.target_devices == TargetDevice.MOBILE_ONLY:
+                compare_target = mobile_preview
+            else:
+                from PIL import Image
+                try:
+                    with Image.open(screenshot_path) as ref_im:
+                        if ref_im.height > ref_im.width * 1.15:
+                            compare_target = mobile_preview
+                except Exception:
+                    pass
 
             # [6/8] Visual Verification
-            self._notify(6, "Visual verification", "Comparing rendered preview against reference screenshot")
+            self._notify(6, "Visual verification", f"Comparing rendered preview against {screenshot_path.name}")
             diff_path = output_dir / "diff_highlight.png"
             comp_path = output_dir / "comparison_composite.png"
             comparison = compute_visual_difference(
                 reference_path=screenshot_path,
-                rendered_path=desktop_preview,
+                rendered_path=compare_target,
                 output_diff_path=diff_path,
                 output_composite_path=comp_path,
             )
@@ -148,21 +179,22 @@ class VisualCodingWorkflow:
                 )
                 refine_context = RefinementContext(
                     screenshot_path=screenshot_path,
-                    rendered_screenshot_path=desktop_preview,
+                    rendered_screenshot_path=compare_target,
                     current_code=current_code,
                     discrepancy_notes=discrepancies,
                     project_dir=output_dir,
                     iteration=iterations,
+                    config=config,
                 )
                 updated_code = await self.adapter.refine_code(refine_context)
                 if updated_code and updated_code != current_code:
                     current_code = updated_code
-                    index_file = scaffold_project(output_dir, current_code, stack=stack, extracted_assets=asset_map)
+                    index_file = scaffold_project(output_dir, current_code, stack=effective_stack, extracted_assets=asset_map, config=config)
                     await self.renderer.capture_html(current_code, viewport="desktop", output_path=desktop_preview)
                     await self.renderer.capture_html(current_code, viewport="mobile", output_path=mobile_preview)
                     comparison = compute_visual_difference(
                         reference_path=screenshot_path,
-                        rendered_path=desktop_preview,
+                        rendered_path=compare_target,
                         output_diff_path=diff_path,
                         output_composite_path=comp_path,
                     )

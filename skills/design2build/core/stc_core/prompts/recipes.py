@@ -5,7 +5,11 @@ Preserved and adapted from the abi/screenshot-to-code architecture.
 Includes battle-tested CDN configurations, stack boilerplates, and replication rules.
 """
 
-from typing import Dict, Literal, Optional
+from typing import Dict, Literal, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from stc_core.config import ProjectConfig
+
 
 StackType = Literal[
     "html_tailwind",
@@ -211,8 +215,61 @@ def get_replication_instructions(
     stack: StackType = "html_tailwind",
     extracted_assets: Optional[Dict[str, str]] = None,
     additional_instructions: Optional[str] = None,
+    config: Optional["ProjectConfig"] = None,
 ) -> str:
-    """Generate replication instructions customized for stack and extracted assets."""
+    """Generate replication instructions customized for stack, project configuration, and extracted assets."""
+    effective_stack = config.stack if (config and config.stack) else stack
+
+    config_directives = []
+    if config:
+        config_directives.append("## Target Project Configuration")
+        config_directives.append(f"- **Project Type**: {config.project_type.value.replace('_', ' ').title()}")
+        config_directives.append(f"- **Target Devices**: {config.target_devices.value.replace('_', ' ').title()}")
+        config_directives.append(f"- **Responsive Strategy**: {config.responsive_mode.value.replace('_', ' ').title()}")
+        config_directives.append(f"- **Reference Intent**: {config.reference_intent.value.replace('_', ' ').title()}")
+        config_directives.append(f"- **Run Mode**: {config.run_mode.value.replace('_', ' ').title()}")
+
+        if config.project_type.value == "component":
+            config_directives.append(
+                "\n### Scope: Isolated Component\n"
+                "Focus ONLY on recreating the specific isolated component or widget shown in the reference "
+                "(e.g., navigation bar, card, dialog, banner). Do NOT build an entire dummy website around it. "
+                "Keep the code modular, self-contained, and easily embeddable."
+            )
+        elif config.project_type.value == "redesign":
+            config_directives.append(
+                "\n### Scope: Modern Redesign\n"
+                "Use the reference as an architectural and content baseline, but modernize typography, spacing, "
+                "contrast, and responsive flow to state-of-the-art web standards."
+            )
+
+        if config.reference_intent.value == "exact_clone":
+            config_directives.append(
+                "\n### Visual Parity Directive\n"
+                "Aim for exact visual parity: identical colors, typography weights, iconography, borders, "
+                "and padding, while ensuring the layout is flexible and responsive."
+            )
+        elif config.reference_intent.value == "design_inspiration":
+            config_directives.append(
+                "\n### Inspiration Directive\n"
+                "Adopt the aesthetic style, color palette, and visual language of the reference, but structure "
+                "clean semantic HTML and flexible CSS tailored to the requested feature set."
+            )
+
+        if config.target_devices.value == "mobile_only":
+            config_directives.append(
+                "\n### Viewport Target: Mobile-First / Mobile-Only\n"
+                "Optimize specifically for mobile touchscreens (375px - 480px). Touch targets must be at least 44x44px. "
+                "Ensure drawer navigation, stacked cards, and compact headers."
+            )
+        elif config.target_devices.value == "desktop_only":
+            config_directives.append(
+                "\n### Viewport Target: Desktop-Focused\n"
+                "Designed primarily for desktop screens (1024px+). Maximize horizontal visual hierarchy."
+            )
+
+    config_section = "\n".join(config_directives) + "\n\n" if config_directives else ""
+
     asset_section = ""
     if extracted_assets:
         items = "\n".join(f"- {name}: `./assets/{filename}`" for name, filename in extracted_assets.items())
@@ -225,11 +282,31 @@ Use these exact relative file paths in your <img> tags or CSS backgrounds. Prese
 
     custom_text = f"\n## Additional User Instructions\n{additional_instructions.strip()}" if additional_instructions else ""
 
+    viewports_desc = ""
+    if config:
+        vp_lines = "\n".join(f"{i+1}. {name.replace('_', ' ').title()}" for i, name in enumerate(config.resolve_viewports()))
+        viewports_desc = f"""
+## Verification Protocol
+Your implementation will be verified in headless browsers across the configured viewports:
+{vp_lines}
+Ensure the layout reflows seamlessly and never collapses into a narrow column on desktop!
+"""
+    else:
+        viewports_desc = """
+## Verification Protocol
+Your implementation will be verified in headless browsers across 4 viewports:
+1. Mobile (375 x 812)
+2. Tablet (768 x 1024)
+3. Desktop (1024 x 768)
+4. Wide Desktop (1440 x 900)
+Ensure the layout reflows seamlessly and never collapses into a narrow column on desktop!
+"""
+
     return f"""Generate code for a web page that visually matches the provided reference design while implementing a fully responsive layout system.
 
-Selected stack: {stack}
+Selected stack: {effective_stack}
 
-## CRITICAL: Responsive Architecture Requirements (Do NOT violate)
+{config_section}## CRITICAL: Responsive Architecture Requirements (Do NOT violate)
 1. DO NOT HARDCODE SCREENSHOT DIMENSIONS: The screenshot represents ONE observed view of the design. Do NOT create a fixed-width container matching the screenshot's width (e.g. DO NOT write `w-[736px]`, `w-[576px]`, `width: 736px`).
 2. FLUID CONTAINER SYSTEM: Wrap the page in `w-full min-h-screen`. Content sections must use `max-w-7xl mx-auto px-4 sm:px-6 lg:px-8` so the website fills wide desktop displays gracefully while centering content.
 3. NO ABSOLUTE POSITIONING FOR LAYOUT: Do not turn the screenshot into a coordinate map. All sections (Hero, Cards, Grids, Footers) must use standard Flexbox and CSS Grid.
@@ -240,15 +317,7 @@ Selected stack: {stack}
 5. HERO SECTION: 2-column layout on desktop (`lg:grid-cols-2` or `lg:flex-row`), stacked on mobile.
 6. ZERO HORIZONTAL OVERFLOW: Ensure no element causes horizontal scrolling on any screen width (375px to 1920px).
 {asset_section}{custom_text}
-
-## Verification Protocol
-Your implementation will be verified in headless browsers across 4 viewports:
-1. Mobile (375 x 812)
-2. Tablet (768 x 1024)
-3. Desktop (1024 x 768)
-4. Wide Desktop (1440 x 900)
-Ensure the layout reflows seamlessly and never collapses into a narrow column on desktop!
-"""
+{viewports_desc}"""
 
 
 def get_refinement_instructions(

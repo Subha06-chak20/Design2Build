@@ -10,7 +10,10 @@ import base64
 import os
 import re
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from stc_core.config import ProjectConfig
 
 from bs4 import BeautifulSoup
 
@@ -59,10 +62,11 @@ def scaffold_project(
     html_content: str,
     stack: str = "html_tailwind",
     extracted_assets: Optional[Dict[str, str]] = None,
+    config: Optional["ProjectConfig"] = None,
 ) -> Path:
     """
     Write project files into target directory.
-    Creates index.html, saves assets, and adds a simple local server script.
+    Creates index.html, saves assets, and adds project config and run runners.
     """
     proj_dir, assets_dir = initialize_project_directory(target_dir)
 
@@ -71,6 +75,10 @@ def scaffold_project(
 
     index_file = proj_dir / "index.html"
     index_file.write_text(clean_html, encoding="utf-8")
+
+    # Save ProjectConfig if provided
+    if config:
+        config.save(proj_dir / "d2b.config.json")
 
     # Generate quick local dev server runner
     server_script = proj_dir / "serve.py"
@@ -95,18 +103,9 @@ except KeyboardInterrupt:
         encoding="utf-8",
     )
 
-    # Generate README in project directory
-    readme_file = proj_dir / "README.md"
-    readme_file.write_text(
-        f"""# Generated Front-End Project
-
-Created with Antigravity-native Screenshot-to-Code workflow.
-- **Stack**: `{stack}`
-- **Entry point**: `index.html`
-- **Assets**: `./assets/`
-
-## How to run locally
-Run the python dev server:
+    # Determine run instructions
+    run_instructions = """## How to run locally
+Run the local dev server:
 ```bash
 python serve.py
 ```
@@ -114,8 +113,46 @@ Or with Node:
 ```bash
 npx serve .
 ```
+Or open directly:
+```bash
+# Double-click index.html or open via browser
+```"""
+    if config and config.run_mode.value == "static":
+        run_instructions = """## How to run locally
+This is a purely static project. Open `index.html` directly in your browser:
+```bash
+# Double-click index.html
+```
+Or run the optional preview server:
+```bash
+python serve.py
+```"""
+    elif config and config.run_mode.value == "vite_dev":
+        run_instructions = """## How to run locally
+Start the local development server:
+```bash
+npm install
+npm run dev
+```
+Or view the standalone preview directly via `index.html`."""
+
+    project_type_info = f"- **Type**: `{config.project_type.value}`\n" if config else ""
+    devices_info = f"- **Devices**: `{config.target_devices.value}`\n" if config else ""
+
+    # Generate README in project directory
+    readme_file = proj_dir / "README.md"
+    readme_file.write_text(
+        f"""# Generated Front-End Project
+
+Created with Design2Build visual coding workflow.
+- **Stack**: `{config.stack if (config and config.stack) else stack}`
+{project_type_info}{devices_info}- **Entry point**: `index.html`
+- **Assets**: `./assets/`
+
+{run_instructions}
 """,
         encoding="utf-8",
     )
 
     return index_file
+
