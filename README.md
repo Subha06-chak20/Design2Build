@@ -17,9 +17,9 @@
   - [2. Install the Core Engine & CLI](#2-install-the-core-engine--cli)
   - [3. Install Browser Engine (Playwright)](#3-install-browser-engine-playwright)
 - [How to Use as an Antigravity Skill](#how-to-use-as-an-antigravity-skill)
-  - [Option A: Workspace-Local Installation](#option-a-workspace-local-installation)
-  - [Option B: Global User Installation](#option-b-global-user-installation)
-- [⚡ Universal AI Agent Prompt (One-Click Setup)](#-universal-ai-agent-prompt-one-click-setup)
+  - [Workspace Installation](#workspace-installation)
+  - [Global Installation](#global-installation)
+  - [Copy-Paste Prompt for Antigravity](#copy-paste-prompt-for-antigravity)
 - [CLI Quick Reference (`d2b`)](#cli-quick-reference-d2b)
 - [Supported Frontend Stacks](#supported-frontend-stacks)
 - [Responsive Layout Architecture](#responsive-layout-architecture)
@@ -106,81 +106,47 @@ playwright install chromium
 
 Antigravity automatically discovers skills defined with a `SKILL.md` file.
 
-### Option A: Workspace-Local Installation
-To use the skill inside your current project workspace, copy or symlink the skill folder into `.agents/skills/`:
+### Workspace Installation
+To use Design2Build inside your current project workspace, copy the skill folder into `.agents/skills/`:
 
 ```bash
-# Inside your project repository:
 mkdir -p .agents/skills
 cp -r /path/to/Design2Build/skills/design2build .agents/skills/
 ```
 
-### Option B: Global User Installation
+### Global Installation
 To make the skill accessible across all your Antigravity sessions on your machine:
 
 **Windows**:
 ```powershell
-Copy-Item -Recurse "skills/design2build" "$env:USERPROFILE\.gemini\antigravity\skills\"
+Copy-Item -Recurse "skills/design2build" "$env:USERPROFILE\.gemini\config\skills\"
 ```
 
 **macOS / Linux**:
 ```bash
-cp -r skills/design2build ~/.gemini/antigravity/skills/
-```
-
-Once installed, simply send your screenshot or design to Antigravity and prompt:
-> *"Use Design2Build to recreate this UI in HTML and Tailwind CSS. Ensure it is fully responsive and verified across viewports."*
-
----
-
-## ⚡ Universal AI Agent Prompt (One-Click Setup)
-
-> **💡 Moving to a new computer, desktop, or AI assistant?**
-> Simply copy and paste the prompt below directly into **Antigravity**, **Cursor**, **Claude Code**, **Codex**, or **Windsurf**. The AI agent will clone the repository, install the dependencies, register the skill, and prepare the visual coding workflow automatically!
-
-### 📋 Prompt 1: Automatic Setup & Environment Verification
-*Copy and paste this into any AI agent chat:*
-
-```text
-I want to use the Design2Build visual coding skill in this project. Please set it up automatically:
-
-1. Clone the repository into this workspace:
-   git clone https://github.com/Subha06-chak20/Design2Build.git
-
-2. Install the Design2Build engine and CLI in editable mode:
-   pip install -e ./Design2Build/skills/design2build/core
-
-3. (Optional for visual verification) Install headless browser support:
-   playwright install chromium
-
-4. Register the skill:
-   - For current workspace: Ensure ./Design2Build/skills/design2build is placed or copied to .agents/skills/design2build
-   - For Antigravity global: Copy to ~/.gemini/antigravity/skills/design2build (or %USERPROFILE%\.gemini\antigravity\skills\design2build on Windows)
-
-5. Read the skill runbook in `skills/design2build/SKILL.md` to load the 10-stage visual coding procedure.
-
-6. Run `d2b doctor` to verify system and browser readiness.
-
-When ready, let me know that Design2Build is installed and ready, then ask me for my reference screenshot or UI prompt to begin building.
+cp -r skills/design2build ~/.gemini/config/skills/
 ```
 
 ---
 
-### 🎯 Prompt 2: One-Shot (Setup + Recreate Reference Design)
-*Use this when you already have a screenshot image or reference mockup ready:*
+### Copy-Paste Prompt for Antigravity
+
+When you move to another computer or new workspace, you can copy and paste this prompt directly into Antigravity to clone, install, and start using the skill immediately:
 
 ```text
-Please install Design2Build and recreate my reference design:
+Please setup and use the Design2Build skill from https://github.com/Subha06-chak20/Design2Build.git:
 
-1. Setup Design2Build:
+1. Clone the repository and install the core tools:
    git clone https://github.com/Subha06-chak20/Design2Build.git
    pip install -e ./Design2Build/skills/design2build/core
+
+2. Install the skill:
    mkdir -p .agents/skills
    cp -r ./Design2Build/skills/design2build .agents/skills/
 
-2. Read .agents/skills/design2build/SKILL.md to load the 10-stage procedure.
+3. Read .agents/skills/design2build/SKILL.md to load the 10-stage runbook.
 
-3. Recreate the UI from my reference image [ATTACH_IMAGE_OR_PATH] using the Design2Build workflow:
+4. Recreate my reference design [ATTACH_IMAGE_OR_PATH] using the Design2Build workflow:
    - Stage 0: Run `d2b setup` to infer the stack, target devices, and run mode without asking unnecessary questions.
    - Stage 1: Present the implementation plan for my confirmation.
    - Stage 2–9: Extract visual assets to ./assets/, implement fluid responsive layout (no fixed screenshot widths), verify across viewports with `d2b check --responsive`, and refine until visually matching!
